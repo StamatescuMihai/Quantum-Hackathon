@@ -17,21 +17,14 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://github.com"
+                href="https://github.com/StamatescuMihai/Quantum-Hackathon"
                 className="text-white/60 hover:text-white transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="w-6 h-6" />
               </a>
               <a
-                href="mailto:contact@quantumexplorer.com"
-                className="text-white/60 hover:text-white transition-colors"
-                aria-label="Email"
-              >
-                <Mail className="w-6 h-6" />
-              </a>
-              <a
-                href="#"
+                href="algorithms"
                 className="text-white/60 hover:text-white transition-colors"
                 aria-label="Documentation"
               >

@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AlgorithmCard from '../components/AlgorithmCard'
 import { BookOpen, Search, Clock, Brain } from 'lucide-react'
 
 const Algorithms = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   const algorithms = [
     {
       title: "Grover's Algorithm",

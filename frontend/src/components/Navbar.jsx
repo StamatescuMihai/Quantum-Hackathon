@@ -8,9 +8,9 @@ const Navbar = () => {
 
   const navigation = [
     { name: 'Home', href: '/', icon: Zap },
-    { name: 'About', href: '/about', icon: Info },
     { name: 'Algorithms', href: '/algorithms', icon: BookOpen },
     { name: 'Simulator', href: '/simulator', icon: Calculator },
+    { name: 'About', href: '/about', icon: Info },
   ]
 
   const isActive = (path) => location.pathname === path

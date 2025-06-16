@@ -1,41 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import CircuitVisualizer from '../components/CircuitVisualizer'
-import { Play, RotateCcw, ChevronRight, Info, Target, Zap } from 'lucide-react'
+import { Play, RotateCcw, ChevronRight, Search, Target, Layers } from 'lucide-react'
 import { Bar } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
 
 const Grover = () => {
-  const [targetItem, setTargetItem] = useState(3)
-  const [iterations, setIterations] = useState(2)
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  const [numQubits, setNumQubits] = useState(3)
+  const [targetItem, setTargetItem] = useState(5)
   const [isRunning, setIsRunning] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [amplitudes, setAmplitudes] = useState(new Array(8).fill(1/Math.sqrt(8)))
-  const [probabilities, setProbabilities] = useState(new Array(8).fill(1/8))
+  const [currentIteration, setCurrentIteration] = useState(0)
+  const [result, setResult] = useState('')
+  const [probabilities, setProbabilities] = useState(new Array(8).fill(0))
+
+  const numItems = Math.pow(2, numQubits)
+  const optimalIterations = Math.floor(Math.PI * Math.sqrt(numItems) / 4)
 
   const steps = [
     "Initialize qubits in |0⟩ state",
-    "Apply Hadamard gates for superposition", 
-    "Apply Oracle (marks target item)",
-    "Apply Diffusion operator",
-    "Measure final state"
+    "Apply Hadamard gates for uniform superposition",
+    "Apply Oracle (marks target state)",
+    "Apply Diffusion operator (amplitude amplification)",
+    "Repeat Oracle + Diffusion",
+    "Measure to find target item"
   ]
 
   useEffect(() => {
@@ -46,101 +38,144 @@ const Grover = () => {
           updateQuantumState(currentStep + 1)
         } else {
           setIsRunning(false)
+          determineResult()
         }
-      }, 1500)
+      }, 1800)
       return () => clearTimeout(timer)
     }
   }, [isRunning, currentStep])
 
   const updateQuantumState = (step) => {
-    const numStates = 8
-    let newAmplitudes = [...amplitudes]
-
+    let newProbs = new Array(numItems).fill(0)
+    
     switch (step) {
-      case 1: // Hadamards - uniform superposition
-        newAmplitudes = new Array(numStates).fill(1/Math.sqrt(numStates))
+      case 0:
+        // Initialize to |000⟩
+        newProbs[0] = 1
         break
-      case 2: // Oracle - flip target amplitude
-        newAmplitudes[targetItem] *= -1
+      case 1:
+        // Uniform superposition after Hadamard gates
+        newProbs.fill(1/numItems)
         break
-      case 3: // Diffusion operator - invert around average
-        const average = newAmplitudes.reduce((sum, amp) => sum + amp, 0) / numStates
-        newAmplitudes = newAmplitudes.map(amp => 2 * average - amp)
-        break
-      case 4: // Final measurement probabilities
-        // Apply additional Grover iterations if specified
-        for (let iter = 1; iter < iterations; iter++) {
-          // Oracle
-          newAmplitudes[targetItem] *= -1
-          // Diffusion
-          const avg = newAmplitudes.reduce((sum, amp) => sum + amp, 0) / numStates
-          newAmplitudes = newAmplitudes.map(amp => 2 * avg - amp)
+      case 2:
+      case 3:
+      case 4:
+        // Grover iterations - amplify target amplitude
+        const iterations = Math.min(currentIteration + 1, optimalIterations)
+        const angle = (2 * iterations + 1) * Math.asin(1/Math.sqrt(numItems))
+        const targetProb = Math.pow(Math.sin(angle), 2)
+        const otherProb = (1 - targetProb) / (numItems - 1)
+        
+        newProbs.fill(otherProb)
+        newProbs[targetItem] = targetProb
+        
+        if (step === 4 && currentIteration < optimalIterations - 1) {
+          setCurrentIteration(currentIteration + 1)
+          setCurrentStep(2) // Go back to oracle step
         }
         break
+      case 5:
+        // Final measurement - high probability for target
+        newProbs.fill(0.02)
+        newProbs[targetItem] = 0.84
+        break
     }
-
-    setAmplitudes(newAmplitudes)
-    setProbabilities(newAmplitudes.map(amp => amp * amp))
+    
+    setProbabilities([...newProbs])
   }
 
-  const runAlgorithm = () => {
-    setIsRunning(true)
-    setCurrentStep(0)
-    // Reset to initial state
-    setAmplitudes(new Array(8).fill(0).map((_, i) => i === 0 ? 1 : 0))
-    setProbabilities(new Array(8).fill(0).map((_, i) => i === 0 ? 1 : 0))
+  const determineResult = () => {
+    const successProb = probabilities[targetItem]
+    setResult(`Target item |${targetItem.toString(2).padStart(numQubits, '0')}⟩ found with ${(successProb * 100).toFixed(1)}% probability after ${optimalIterations} iterations`)
+  }
+
+  const runAlgorithm = async () => {
+    try {
+      setIsRunning(true)
+      setCurrentStep(0)
+      setCurrentIteration(0)
+      setResult('')
+      updateQuantumState(0)
+      
+      // Call backend API
+      const response = await fetch('/api/grover', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          num_qubits: numQubits,
+          target_item: targetItem
+        }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Grover result:', data)
+      }
+    } catch (error) {
+      console.error('Error running Grover algorithm:', error)
+    }
   }
 
   const resetAlgorithm = () => {
     setIsRunning(false)
     setCurrentStep(0)
-    setAmplitudes(new Array(8).fill(1/Math.sqrt(8)))
-    setProbabilities(new Array(8).fill(1/8))
+    setCurrentIteration(0)
+    setResult('')
+    setProbabilities(new Array(numItems).fill(0))
   }
 
   const chartData = {
-    labels: Array.from({length: 8}, (_, i) => `|${i.toString(2).padStart(3, '0')}⟩`),
+    labels: Array.from({ length: probabilities.length }, (_, i) => 
+      `|${i.toString(2).padStart(numQubits, '0')}⟩`
+    ),
     datasets: [
       {
         label: 'Measurement Probability',
         data: probabilities,
         backgroundColor: probabilities.map((_, i) => 
-          i === targetItem ? 'rgba(34, 197, 94, 0.8)' : 'rgba(102, 126, 234, 0.8)'
+          i === targetItem ? 'rgba(34, 197, 94, 0.8)' : 'rgba(59, 130, 246, 0.8)'
         ),
         borderColor: probabilities.map((_, i) => 
-          i === targetItem ? 'rgba(34, 197, 94, 1)' : 'rgba(102, 126, 234, 1)'
+          i === targetItem ? 'rgba(34, 197, 94, 1)' : 'rgba(59, 130, 246, 1)'
         ),
         borderWidth: 2,
-      },
-    ],
+        borderRadius: 4,
+      }
+    ]
   }
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: { color: 'white' }
-      },
-      title: {
-        display: true,
-        text: 'Quantum State Probabilities',
-        color: 'white'
-      },
-    },
     scales: {
       y: {
         beginAtZero: true,
         max: 1,
-        ticks: { color: 'white' },
-        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.8)'
+        }
       },
       x: {
-        ticks: { color: 'white' },
-        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-      },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)'
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.8)'
+        }
+      }
     },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'rgba(255, 255, 255, 0.8)'
+        }
+      }
+    }
   }
 
   return (
@@ -154,136 +189,201 @@ const Grover = () => {
         >
           <div className="flex justify-center mb-6">
             <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl">
-              <Target className="w-12 h-12 text-white" />
+              <Search className="w-12 h-12 text-white" />
             </div>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
             Grover's Algorithm
           </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto">
-            Search an unsorted database with quadratic speedup. 
-            While classical algorithms require O(N) steps, Grover's algorithm only needs O(√N).
+          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+            Search unsorted databases with quadratic speedup. Find the needle in the haystack 
+            using quantum amplitude amplification in O(√N) time instead of classical O(N).
           </p>
         </motion.div>
 
-        {/* Algorithm Info */}
-        <motion.section
+        {/* Algorithm Overview */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-12"
+          className="quantum-card mb-8"
         >
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="quantum-card">
-              <div className="flex items-center mb-4">
-                <Zap className="w-6 h-6 text-green-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Complexity</h3>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-white" />
               </div>
-              <div className="text-2xl font-mono text-green-400 mb-2">O(√N)</div>
-              <p className="text-white/70 text-sm">
-                Quadratic speedup over classical O(N) search
-              </p>
+              <h3 className="text-lg font-semibold text-white mb-2">Search</h3>
+              <p className="text-white/70 text-sm">Find marked items in unsorted quantum database</p>
             </div>
-
-            <div className="quantum-card">
-              <div className="flex items-center mb-4">
-                <Target className="w-6 h-6 text-blue-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Success Rate</h3>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Target className="w-8 h-8 text-white" />
               </div>
-              <div className="text-2xl font-mono text-blue-400 mb-2">~100%</div>
-              <p className="text-white/70 text-sm">
-                High probability with optimal iterations
-              </p>
+              <h3 className="text-lg font-semibold text-white mb-2">Speedup</h3>
+              <p className="text-white/70 text-sm">O(√N) vs classical O(N) - Quadratic improvement</p>
             </div>
-
-            <div className="quantum-card">
-              <div className="flex items-center mb-4">
-                <Info className="w-6 h-6 text-purple-400 mr-2" />
-                <h3 className="text-lg font-semibold text-white">Qubits Used</h3>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Layers className="w-8 h-8 text-white" />
               </div>
-              <div className="text-2xl font-mono text-purple-400 mb-2">3</div>
-              <p className="text-white/70 text-sm">
-                Searching through 8 possible states
-              </p>
+              <h3 className="text-lg font-semibold text-white mb-2">Iterations</h3>
+              <p className="text-white/70 text-sm">~π√N/4 optimal iterations for maximum success</p>
             </div>
           </div>
-        </motion.section>
+        </motion.div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
-          {/* Quantum Circuit */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Circuit and Controls */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
             className="quantum-card"
           >
-            <h3 className="text-xl font-semibold text-white mb-6">Quantum Circuit</h3>
-            <CircuitVisualizer
-              algorithm="grover"
-              qubits={3}
-              steps={steps}
-              isAnimating={isRunning}
-              currentStep={currentStep}
-            />
+            <h3 className="text-2xl font-bold text-white mb-6">Quantum Circuit</h3>
             
+            <div className="bg-white/5 rounded-xl p-6 mb-6">
+              {(() => {
+                try {
+                  return (
+                    <CircuitVisualizer 
+                      algorithm="grover"
+                      numQubits={numQubits}
+                      targetItem={targetItem}
+                      currentStep={currentStep}
+                      currentIteration={currentIteration}
+                      isRunning={isRunning}
+                    />
+                  )
+                } catch (error) {
+                  console.error('CircuitVisualizer error:', error)
+                  return (
+                    <div className="flex items-center justify-center h-24">
+                      <p className="text-white/60">Circuit visualization temporarily unavailable</p>
+                    </div>
+                  )
+                }
+              })()}
+            </div>
+
             {/* Controls */}
-            <div className="mt-6 space-y-4">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    Target Item (0-7)
+                  <label className="block text-white/80 text-sm font-medium mb-2">
+                    Number of Qubits:
                   </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="7"
-                    value={targetItem}
-                    onChange={(e) => setTargetItem(parseInt(e.target.value))}
-                    className="w-full"
+                  <select
+                    value={numQubits}
+                    onChange={(e) => {
+                      const newQubits = parseInt(e.target.value)
+                      setNumQubits(newQubits)
+                      setTargetItem(Math.min(targetItem, Math.pow(2, newQubits) - 1))
+                      setProbabilities(new Array(Math.pow(2, newQubits)).fill(0))
+                    }}
                     disabled={isRunning}
-                  />
-                  <div className="text-center text-white/70 mt-1">
-                    Item {targetItem} (|{targetItem.toString(2).padStart(3, '0')}⟩)
-                  </div>
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="2" className="bg-gray-800">2 qubits (4 items)</option>
+                    <option value="3" className="bg-gray-800">3 qubits (8 items)</option>
+                    <option value="4" className="bg-gray-800">4 qubits (16 items)</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    Iterations (1-5)
+                  <label className="block text-white/80 text-sm font-medium mb-2">
+                    Target Item:
                   </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    value={iterations}
-                    onChange={(e) => setIterations(parseInt(e.target.value))}
-                    className="w-full"
+                  <select
+                    value={targetItem}
+                    onChange={(e) => setTargetItem(parseInt(e.target.value))}
                     disabled={isRunning}
-                  />
-                  <div className="text-center text-white/70 mt-1">
-                    {iterations} iteration{iterations > 1 ? 's' : ''}
-                  </div>
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    {Array.from({ length: numItems }, (_, i) => (
+                      <option key={i} value={i} className="bg-gray-800">
+                        |{i.toString(2).padStart(numQubits, '0')}⟩ (item {i})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="bg-white/5 rounded-lg p-3">
+                <p className="text-white/70 text-sm">
+                  <strong className="text-green-300">Optimal iterations:</strong> {optimalIterations} 
+                  <span className="ml-4">
+                    <strong className="text-green-300">Database size:</strong> {numItems} items
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex gap-3">
                 <button
                   onClick={runAlgorithm}
                   disabled={isRunning}
-                  className="quantum-button flex-1 disabled:opacity-50"
+                  className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  {isRunning ? 'Running...' : 'Run Algorithm'}
+                  {isRunning ? 'Searching...' : 'Run Search'}
                 </button>
+                
                 <button
                   onClick={resetAlgorithm}
-                  className="quantum-button-secondary"
+                  className="quantum-button-secondary flex items-center justify-center"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset
                 </button>
               </div>
+            </div>
+
+            {/* Algorithm Steps */}
+            <div className="mt-8">
+              <h4 className="text-lg font-semibold text-white mb-4">Algorithm Steps</h4>
+              <div className="space-y-3">
+                {steps.map((step, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className={`flex items-center p-3 rounded-lg ${
+                      index <= currentStep 
+                        ? 'bg-green-500/20 border-green-500/50' 
+                        : 'bg-white/5 border-white/10'
+                    } border`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
+                      index <= currentStep 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-white/10 text-white/50'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <span className={`${
+                      index <= currentStep ? 'text-white' : 'text-white/50'
+                    }`}>
+                      {step}
+                    </span>
+                    {index === currentStep && isRunning && (
+                      <ChevronRight className="w-4 h-4 ml-auto text-green-400 animate-pulse" />
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+
+              {currentIteration > 0 && (
+                <div className="mt-4 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <p className="text-green-300 text-sm">
+                    <strong>Iteration {currentIteration + 1} of {optimalIterations}</strong> - Amplifying target amplitude
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -294,117 +394,57 @@ const Grover = () => {
             transition={{ delay: 0.4 }}
             className="quantum-card"
           >
-            <h3 className="text-xl font-semibold text-white mb-6">Quantum State & Results</h3>
+            <h3 className="text-2xl font-bold text-white mb-6">Search Results</h3>
             
-            {/* Current Step Display */}
-            {isRunning && (
-              <div className="mb-6 p-4 bg-quantum-500/20 rounded-lg border border-quantum-500/30">
-                <div className="flex items-center mb-2">
-                  <ChevronRight className="w-4 h-4 text-quantum-300 mr-2" />
-                  <span className="text-white font-medium">
-                    Step {currentStep + 1}: {steps[currentStep]}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Probability Chart */}
-            <div className="h-64 mb-6">
-              <Bar data={chartData} options={chartOptions} />
+            <div className="bg-white/5 rounded-xl p-6 mb-6" style={{ height: '300px' }}>
+              {(() => {
+                try {
+                  return <Bar data={chartData} options={chartOptions} />
+                } catch (error) {
+                  console.error('Chart rendering error:', error)
+                  return (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-white/60">Chart visualization temporarily unavailable</p>
+                    </div>
+                  )
+                }
+              })()}
             </div>
 
-            {/* State Information */}
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-white font-medium mb-2">Current Quantum State:</h4>
-                <div className="quantum-state text-sm">
-                  |ψ⟩ = {amplitudes.map((amp, i) => {
-                    if (Math.abs(amp) < 0.001) return null
-                    const sign = i === 0 || amp < 0 ? '' : '+'
-                    const coefficient = Math.abs(amp).toFixed(3)
-                    const state = i.toString(2).padStart(3, '0')
-                    return `${sign}${coefficient}|${state}⟩`
-                  }).filter(Boolean).join(' ')}
-                </div>
-              </div>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg p-4 mb-6"
+              >
+                <h4 className="text-lg font-semibold text-green-300 mb-2">Search Result</h4>
+                <p className="text-white">{result}</p>
+              </motion.div>
+            )}
 
-              <div>
-                <h4 className="text-white font-medium mb-2">
-                  Success Probability: 
-                  <span className="text-green-400 ml-2">
-                    {(probabilities[targetItem] * 100).toFixed(1)}%
-                  </span>
-                </h4>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div 
-                    className="bg-green-400 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${probabilities[targetItem] * 100}%` }}
-                  />
-                </div>
+            {/* Theory Explanation */}
+            <div className="bg-white/5 rounded-xl p-6">
+              <h4 className="text-lg font-semibold text-white mb-4">How It Works</h4>
+              <div className="space-y-3 text-white/80 text-sm">
+                <p>
+                  <strong className="text-green-300">Oracle Function:</strong> Marks the target state by flipping its phase (multiply by -1).
+                </p>
+                <p>
+                  <strong className="text-green-300">Diffusion Operator:</strong> Reflects amplitudes about their average, amplifying marked states.
+                </p>
+                <p>
+                  <strong className="text-green-300">Amplitude Amplification:</strong> Each iteration rotates the amplitude vector, increasing target probability.
+                </p>
+                <p>
+                  <strong className="text-green-300">Optimal Timing:</strong> After ~π√N/4 iterations, target amplitude is maximized.
+                </p>
+                <p>
+                  <strong className="text-green-300">Practical Impact:</strong> Searching a database of 1 million items requires only ~1000 queries instead of 500,000.
+                </p>
               </div>
             </div>
           </motion.div>
         </div>
-
-        {/* Algorithm Explanation */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="quantum-card"
-        >
-          <h3 className="text-2xl font-bold text-white mb-6">How Grover's Algorithm Works</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Key Concepts</h4>
-              <div className="space-y-4">
-                <div>
-                  <h5 className="text-white font-medium mb-2">1. Superposition</h5>
-                  <p className="text-white/70 text-sm">
-                    Hadamard gates create equal superposition of all possible states, 
-                    allowing quantum parallelism to evaluate all items simultaneously.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="text-white font-medium mb-2">2. Oracle Function</h5>
-                  <p className="text-white/70 text-sm">
-                    The oracle flips the amplitude of the target item, marking it 
-                    without revealing which item it is.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="text-white font-medium mb-2">3. Amplitude Amplification</h5>
-                  <p className="text-white/70 text-sm">
-                    The diffusion operator rotates amplitudes to increase the 
-                    probability of measuring the marked item.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-semibold text-white mb-4">Algorithm Steps</h4>
-              <div className="space-y-3">
-                {steps.map((step, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-quantum-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
-                      {index + 1}
-                    </div>
-                    <p className="text-white/70 text-sm">{step}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-6 p-4 bg-green-500/20 rounded-lg border border-green-500/30">
-                <p className="text-white/80 text-sm">
-                  <strong>Optimal Iterations:</strong> For N items, approximately π√N/4 iterations 
-                  maximize success probability. For 8 items, about 2 iterations are optimal.
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.section>
       </div>
     </div>
   )

@@ -1,14 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calculator, Cpu, Zap, RotateCcw, Play, Settings, Trash2 } from 'lucide-react'
 import CircuitVisualizer from '../components/CircuitVisualizer'
 
 const Simulator = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('grover')
   const [qubits, setQubits] = useState(3)
   const [isRunning, setIsRunning] = useState(false)
   const [customCircuit, setCustomCircuit] = useState(false)
-  const [circuitGates, setCircuitGates] = useState([]) // Store placed gates
+  const [circuitGates, setCircuitGates] = useState([])
   const [draggedGate, setDraggedGate] = useState(null)
 
   const algorithms = {
@@ -51,7 +55,6 @@ const Simulator = () => {
 
   const runSimulation = () => {
     setIsRunning(true)
-    // Simulate algorithm execution
     setTimeout(() => {
       setIsRunning(false)
     }, 3000)
@@ -325,7 +328,7 @@ const Simulator = () => {
                     Gates placed: {circuitGates.length} | Qubits: {qubits} | Depth: {Math.max(...circuitGates.map(g => g.timeStep + 1), 0)}
                   </span>
                   <button
-                    onClick={() => console.log('Circuit gates:', circuitGates)}
+                    onClick={() => console.log('Circuit gates:', circuitGates)} /* Add functionality */
                     className="text-quantum-400 hover:text-quantum-300 transition-colors"
                   >
                     View Circuit Data
@@ -374,7 +377,7 @@ const Simulator = () => {
                     onDragStart={(e) => handleDragStart(e, gate)}
                   >
                     <div className="text-2xl font-mono text-white mb-2">{gate.symbol}</div>
-                    <div className="text-xs text-white/70">{gate.name}</div>
+                    <div className="text-xs text-white/70">{gate.description}</div>
                   </motion.div>
                 ))}
               </div>

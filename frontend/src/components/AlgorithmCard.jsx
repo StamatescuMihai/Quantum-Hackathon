@@ -24,7 +24,7 @@ const AlgorithmCard = ({
     <Link to={link} className="group">
       <div className="quantum-card h-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-quantum-500/20">
         {/* Header with gradient */}
-        <div className={`h-2 w-full bg-gradient-to-r ${color} rounded-t-xl -mt-6 -mx-6 mb-4`} />
+        <div className={`h-2 w-[120] bg-gradient-to-r ${color} rounded-t-xl -mt-6 -mx-6 mb-4`} />
         
         {/* Content */}
         <div className="space-y-4">

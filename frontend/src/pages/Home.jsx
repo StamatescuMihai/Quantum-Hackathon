@@ -1,10 +1,14 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Zap, BookOpen, Calculator, Brain, Cpu, Atom } from 'lucide-react'
 import AlgorithmCard from '../components/AlgorithmCard'
 
 const Home = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   const algorithms = [
     {
       title: "Grover's Algorithm",
@@ -220,19 +224,6 @@ const Home = () => {
                 <AlgorithmCard {...algorithm} />
               </motion.div>
             ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <Link to="/algorithms" className="quantum-button">
-              <BookOpen className="w-5 h-5 mr-2" />
-              Explore All Algorithms
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Link>
           </motion.div>
         </div>
       </section>

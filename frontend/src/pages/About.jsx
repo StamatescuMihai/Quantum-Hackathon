@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Users, Target, Lightbulb, BookOpen, Github, Mail, Heart } from 'lucide-react'
 
 const About = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
   const features = [
     {
       icon: Target,
@@ -23,19 +27,34 @@ const About = () => {
 
   const team = [
     {
-      name: "Dr. Alice Quantum",
+      name: "Romaniuc Albert-Iulian",
       role: "Quantum Algorithms Researcher",
-      description: "PhD in Quantum Information Science, specializing in quantum algorithm development and optimization."
+      description: "First year student enrolled in National University Politehnica Bucharest. Algebra and quantum expert.",
+      image: "images/images.jpg"
     },
     {
-      name: "Bob Circuit",
-      role: "Frontend Developer",
-      description: "Expert in React and quantum visualization, passionate about making complex concepts accessible."
+      name: "Visinescu Nicolas-Catalin",
+      role: "System Engineer and Developer",
+      description: "Python developer, system manager.",
+      image: "images/images.jpg"
     },
     {
-      name: "Charlie Entangled",
-      role: "Backend Engineer",
-      description: "Python developer with expertise in quantum simulation and API development."
+      name: "Stamatescu Mihai",
+      role: "Backend Developer and Frontend Developer",
+      description: "Python developer with expertise in quantum simulation, API development and React language.",
+      image: "images/images.jpg"
+    },
+    {
+      name: "Cavescu Dumitru-Andrei",
+      role: "",
+      description: "",
+      image: "images/images.jpg"
+    },
+    {
+      name: "Tanasescu Razvan",
+      role: "",
+      description: "",
+      image: "images/images.jpg"
     }
   ]
 
@@ -51,7 +70,6 @@ const About = () => {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -85,7 +103,7 @@ const About = () => {
                 </p>
                 <p className="text-white/70 leading-relaxed">
                   We believe that everyone should have the opportunity to understand and 
-                  experiment with quantum algorithms, regardless of their mathematical background. 
+                  experiment with quantum algorithms, regardless of their background. 
                   Through visualization, simulation, and guided learning, we make the quantum 
                   world tangible and exciting.
                 </p>
@@ -134,7 +152,6 @@ const About = () => {
           </div>
         </motion.section>
 
-        {/* Technology Stack */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -162,8 +179,6 @@ const About = () => {
             </div>
           </div>
         </motion.section>
-
-        {/* Team Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -171,17 +186,24 @@ const About = () => {
           className="mb-16"
         >
           <h2 className="text-3xl font-bold text-white text-center mb-12">Meet the Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-wrap justify-center gap-8">
             {team.map((member, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
-                className="quantum-card text-center"
-              >
-                <div className="w-24 h-24 bg-gradient-to-br from-quantum-400 to-quantum-600 rounded-full mx-auto mb-6 flex items-center justify-center">
-                  <Users className="w-12 h-12 text-white" />
+                className="quantum-card text-center w-full sm:w-80 max-w-sm"
+              >                <div className="w-24 h-24 bg-gradient-to-br from-quantum-400 to-quantum-600 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  {member.image ? (
+                    <img 
+                      src={member.image} 
+                      alt={member.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <Users className="w-12 h-12 text-white" />
+                  )}
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">{member.name}</h3>
                 <p className="text-quantum-300 font-medium mb-4">{member.role}</p>
@@ -207,18 +229,11 @@ const About = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <a
-                href="https://github.com"
+                href="https://github.com/StamatescuMihai/Quantum-Hackathon"
                 className="quantum-button flex items-center justify-center"
               >
                 <Github className="w-5 h-5 mr-2" />
                 View on GitHub
-              </a>
-              <a
-                href="mailto:contact@quantumexplorer.com"
-                className="quantum-button-secondary flex items-center justify-center"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Get in Touch
               </a>
             </div>
 
@@ -239,7 +254,6 @@ const About = () => {
           </div>
         </motion.section>
 
-        {/* Future Plans */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
