@@ -59,8 +59,9 @@ quantum-algorithm-explorer/
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Python 3.8+
+- Python 3.9+
 - Git
+- Just command runner (install with `cargo install just` or `brew install just`)
 
 ### Quick Start
 
@@ -70,30 +71,31 @@ git clone https://github.com/your-username/quantum-algorithm-explorer.git
 cd quantum-algorithm-explorer
 ```
 
-2. **Start with Docker (Recommended)**
+2. **Install dependencies**
 ```bash
-docker-compose up --build
+just install
 ```
 
-3. **Or run manually:**
-
-**Frontend:**
+3. **Run the application**
 ```bash
-cd frontend
-npm install
-npm run dev
-```
+# Start both frontend and backend
+just run-all
 
-**Backend:**
-```bash
-cd backend
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Or start them separately:
+just run-backend    # Backend only (port 8000)
+just run-frontend   # Frontend only (port 3000)
 ```
 
 4. **Open your browser**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api/docs
+
+### Available Commands
+
+- `just install` - Install all dependencies
+- `just run-backend` - Start backend server
+- `just run-frontend` - Start frontend dev server  
+- `just run-all` - Start both servers simultaneously
 
 ## Technology Stack
 
@@ -189,9 +191,11 @@ We welcome contributions from the quantum computing community!
 ### Development Setup
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests and documentation
-5. Submit a pull request
+3. Install dependencies: `just install`
+4. Make your changes
+5. Test your changes: `just run-all`
+6. Add tests and documentation
+7. Submit a pull request
 
 ### Code Style
 - Frontend: ESLint + Prettier
@@ -209,13 +213,19 @@ pytest
 
 ## Deployment
 
+### Local Development
+```bash
+just install
+just run-all
+```
+
 ### Production Build
 ```bash
 # Frontend
-npm run build
+cd frontend && npm run build
 
 # Backend
-pip install -r requirements.txt
+cd backend && pip install -r requirements.txt
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -226,7 +236,7 @@ docker-compose -f docker-compose.prod.yml up --build
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the WTFPL (Do What The Fuck You Want To Public License) - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
@@ -234,27 +244,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Quantum Computing Community** for inspiration and feedback
 - **Educational Institutions** supporting quantum education
 
-## Support
-
-- 📧 Email: contact@quantumexplorer.com
-- 🐛 Issues: [GitHub Issues](https://github.com/your-username/quantum-algorithm-explorer/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/your-username/quantum-algorithm-explorer/discussions)
-
 ## Roadmap
 
 ### Coming Soon
 - [ ] Shor's Algorithm implementation
 - [ ] Quantum Fourier Transform module
-- [ ] Real quantum hardware integration
 - [ ] Advanced circuit builder
 - [ ] Quantum machine learning algorithms
-
-### Future Plans
-- [ ] VR/AR quantum visualization
-- [ ] Collaborative learning features
-- [ ] Gamification elements
-- [ ] Mobile application
-- [ ] Integration with quantum cloud services
 
 ---
 
