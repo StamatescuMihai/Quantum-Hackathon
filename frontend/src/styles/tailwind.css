@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom quantum-themed styles */
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-quantum-900 via-quantum-800 to-quantum-700 min-h-screen text-white;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .quantum-card {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 shadow-xl;
+    backdrop-filter: blur(16px);
+  }
+  
+  .quantum-button {
+    @apply px-6 py-3 bg-quantum-600 hover:bg-quantum-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg;
+  }
+  
+  .quantum-button-secondary {
+    @apply px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg border border-white/20 transition-all duration-200 backdrop-blur-sm;
+  }
+  
+  .quantum-circuit-wire {
+    @apply stroke-circuit-wire stroke-2;
+  }
+  
+  .quantum-gate {
+    @apply fill-circuit-gate stroke-white stroke-2;
+  }
+  
+  .oracle-gate {
+    @apply fill-circuit-oracle stroke-white stroke-2;
+  }
+  
+  .hadamard-gate {
+    @apply fill-circuit-hadamard stroke-white stroke-2;
+  }
+  
+  .diffusion-gate {
+    @apply fill-circuit-diffusion stroke-white stroke-2;
+  }
+  
+  .algorithm-selector {
+    @apply flex flex-wrap gap-4 justify-center mb-8;
+  }
+  
+  .algorithm-tab {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-200 cursor-pointer;
+  }
+  
+  .algorithm-tab.active {
+    @apply bg-quantum-600 text-white shadow-lg;
+  }
+  
+  .algorithm-tab.inactive {
+    @apply bg-white/10 text-white/80 hover:bg-white/20 border border-white/20;
+  }
+  
+  .control-panel {
+    @apply space-y-4;
+  }
+  
+  .control-group {
+    @apply flex items-center justify-between;
+  }
+  
+  .control-label {
+    @apply text-sm font-medium text-white/90 min-w-[120px];
+  }
+  
+  .control-input {
+    @apply flex-1 ml-4;
+  }
+  
+  .probability-bar {
+    @apply h-4 bg-gradient-to-r from-quantum-400 to-quantum-600 rounded-full transition-all duration-500;
+  }
+  
+  .state-label {
+    @apply font-mono text-sm;
+  }
+  
+  .complexity-badge {
+    @apply inline-block px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-mono rounded-full;
+  }
+  
+  .info-card {
+    @apply quantum-card;
+  }
+  
+  .info-card h4 {
+    @apply text-lg font-semibold mb-2 text-quantum-200;
+  }
+  
+  .info-card p {
+    @apply text-white/80 leading-relaxed;
+  }
+  
+  /* Custom Circuit Builder */
+  .quantum-circuit-builder .circuit-grid {
+    min-height: 200px;
+  }
+  
+  .quantum-circuit-builder .drop-zone {
+    transition: all 0.2s ease;
+  }
+  
+  .quantum-circuit-builder .drop-zone:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+  
+  .quantum-circuit-builder .drop-zone.drag-over {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.6);
+  }
+}
+
+@layer utilities {
+  .glass-effect {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .quantum-glow {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .animate-quantum-pulse {
+    animation: quantum-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes quantum-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Circuit-specific styles */
+.circuit-container {
+  @apply bg-white/5 rounded-lg p-6 min-h-[300px] relative overflow-hidden;
+}
+
+.circuit-background {
+  background-image: 
+    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Mathematical notation styles */
+.katex {
+  color: inherit !important;
+}
+
+.quantum-state {
+  @apply font-mono bg-black/20 px-3 py-2 rounded border-l-4 border-quantum-400;
+}
+
+/* Animation for quantum effects */
+.quantum-particle {
+  animation: quantum-float 3s ease-in-out infinite;
+}
+
+@keyframes quantum-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(5deg); }
+  66% { transform: translateY(5px) rotate(-5deg); }
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .algorithm-selector {
+    @apply flex-col items-center;
+  }
+  
+  .content-grid {
+    @apply grid-cols-1;
+  }
+  
+  .quantum-card {
+    @apply p-4;
+  }
+}

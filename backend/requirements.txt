@@ -1,0 +1,35 @@
+# Core web framework dependencies
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+pydantic==2.6.4
+python-multipart==0.0.9
+aiofiles==23.2.1
+
+# Quantum computing dependencies (Python 3.12+ compatible)
+qiskit==1.0.2
+qiskit-aer==0.14.1
+qiskit-algorithms==0.3.0
+
+# Scientific computing
+numpy==1.26.4
+scipy==1.12.0
+matplotlib==3.8.4
+
+# Security and authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.1
+
+# Development and testing
+pytest==8.1.1
+pytest-asyncio==0.23.6
+httpx==0.27.0
+requests==2.31.0
+
+# Code quality
+black==24.3.0
+flake8==7.0.0
+isort==5.13.2
+
+# Additional utilities for Python 3.12+ compatibility
+setuptools==69.2.0
