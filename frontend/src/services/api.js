@@ -24,7 +24,7 @@ const api = axios.create({
  */
 export const runGroverAlgorithm = async (targetItem, iterations, numQubits) => {
   try {
-    const response = await api.post('/api/algorithms/grover/run', {
+    const response = await api.post('/api/algorithms/grover/simulate', {
       target_item: targetItem,
       iterations: iterations,
       num_qubits: numQubits

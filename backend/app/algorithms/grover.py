@@ -140,6 +140,11 @@ def simulate_grover(circuit: QuantumCircuit) -> tuple:
         counts = {"000": 1024}  # Fallback measurement
         return statevector, probabilities, counts
 
+@router.post("/grover/simulate", response_model=GroverResponse)
+async def simulate_grover_algorithm(request: GroverRequest):
+    """Simulate Grover's algorithm with specified parameters (alias for run)"""
+    return await run_grover_algorithm(request)
+
 @router.post("/grover/run", response_model=GroverResponse)
 async def run_grover_algorithm(request: GroverRequest):
     """Run Grover's algorithm with specified parameters"""

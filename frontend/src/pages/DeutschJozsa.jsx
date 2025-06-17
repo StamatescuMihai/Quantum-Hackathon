@@ -39,15 +39,26 @@ const DeutschJozsa = () => {
       const timer = setTimeout(() => {
         if (currentStep < steps.length - 1) {
           setCurrentStep(currentStep + 1)
+          // Always run animation for visual effect
           updateQuantumState(currentStep + 1)
         } else {
           setIsRunning(false)
-          determineResult()
+          // Animation completed - now apply final results
+          if (isUsingBackend && apiResult) {
+            // Apply backend results after animation
+            if (apiResult.success && apiResult.probabilities) {
+              setProbabilities(apiResult.probabilities)
+              setResult(`Function is ${apiResult.result} (Backend Result)`)
+            }
+          } else if (!isUsingBackend) {
+            // Local simulation result
+            determineResult()
+          }
         }
       }, 1500)
       return () => clearTimeout(timer)
     }
-  }, [isRunning, currentStep])
+  }, [isRunning, currentStep, isUsingBackend, apiResult])
 
   const updateQuantumState = (step) => {
     let newProbs = new Array(8).fill(0)
@@ -87,10 +98,13 @@ const DeutschJozsa = () => {
   }
 
   const determineResult = () => {
-    if (functionType.startsWith('constant')) {
-      setResult('Function is CONSTANT - determined with certainty in 1 query')
-    } else {
-      setResult('Function is BALANCED - determined with certainty in 1 query')
+    // Only determine result for local simulation, not backend
+    if (!isUsingBackend) {
+      if (functionType.startsWith('constant')) {
+        setResult('Function is CONSTANT - determined with certainty in 1 query')
+      } else {
+        setResult('Function is BALANCED - determined with certainty in 1 query')
+      }
     }
   }
 
@@ -107,13 +121,10 @@ const DeutschJozsa = () => {
         const data = await runDeutschJozsaAlgorithm(functionType, 3)
         setApiResult(data)
         
-        // Update visualization with backend results
-        if (data.success && data.probabilities) {
-          setProbabilities(data.probabilities)
-          setResult(`Function is ${data.result} (Backend Result)`)
-        }
+        // Store backend results but don't display them yet - let animation run first
+        // The animation will run and then backend results will be applied when animation completes
         
-        // Animate through steps for visualization
+        // Start visual animation
         updateQuantumState(0)
       } else {
         // Use local simulation
@@ -243,138 +254,114 @@ const DeutschJozsa = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Circuit and Controls */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Algorithm Steps */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
             className="quantum-card"
           >
-            <h3 className="text-2xl font-bold text-white mb-6">Quantum Circuit</h3>
-            
-            <div className="bg-white/5 rounded-xl p-6 mb-6">
-              {(() => {
-                try {
-                  return (
-                    <CircuitVisualizer 
-                      algorithm="deutsch-jozsa"
-                      functionType={functionType}
-                      currentStep={currentStep}
-                      isRunning={isRunning}
-                    />
-                  )
-                } catch (error) {
-                  console.error('CircuitVisualizer error:', error)
-                  return (
-                    <div className="flex items-center justify-center h-24">
-                      <p className="text-white/60">Circuit visualization temporarily unavailable</p>
-                    </div>
-                  )
-                }
-              })()}
+            <h3 className="text-2xl font-bold text-white mb-6">Algorithm Steps</h3>
+            <div className="space-y-3">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className={`flex items-center p-3 rounded-lg ${
+                    index <= currentStep 
+                      ? 'bg-blue-500/20 border-blue-500/50' 
+                      : 'bg-white/5 border-white/10'
+                  } border`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
+                    index <= currentStep 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-white/10 text-white/50'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <span className={`${
+                    index <= currentStep ? 'text-white' : 'text-white/50'
+                  }`}>
+                    {step}
+                  </span>
+                  {index === currentStep && isRunning && (
+                    <ChevronRight className="w-4 h-4 ml-auto text-blue-400 animate-pulse" />
+                  )}
+                </motion.div>
+              ))}
             </div>
 
             {/* Controls */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-white/80 text-sm font-medium mb-2">
-                  Function Type:
-                </label>
-                <select
-                  value={functionType}
-                  onChange={(e) => setFunctionType(e.target.value)}
-                  disabled={isRunning}
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="constant-0" className="bg-gray-800">Constant (f=0)</option>
-                  <option value="constant-1" className="bg-gray-800">Constant (f=1)</option>
-                  <option value="balanced" className="bg-gray-800">Balanced</option>
-                </select>
-                <p className="text-white/60 text-xs mt-1">
-                  {functionTypes[functionType].description}
-                </p>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-3">
-                <label className="flex items-center text-white/80 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={isUsingBackend}
-                    onChange={(e) => setIsUsingBackend(e.target.checked)}
-                    className="mr-2 rounded"
-                  />
-                  Use Backend Quantum Simulation
-                </label>
-                <p className="text-white/60 text-xs mt-1">
-                  {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
-                </p>
-              </div>
-
-              {error && (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                  <p className="text-red-300 text-sm">{error}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={runAlgorithm}
-                  disabled={isRunning}
-                  className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isRunning ? 'Running...' : 'Run Algorithm'}
-                </button>
-                
-                <button
-                  onClick={resetAlgorithm}
-                  className="quantum-button-secondary flex items-center justify-center"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Algorithm Steps */}
-            <div className="mt-8">
-              <h4 className="text-lg font-semibold text-white mb-4">Algorithm Steps</h4>
-              <div className="space-y-3">
-                {steps.map((step, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className={`flex items-center p-3 rounded-lg ${
-                      index <= currentStep 
-                        ? 'bg-blue-500/20 border-blue-500/50' 
-                        : 'bg-white/5 border-white/10'
-                    } border`}
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Controls</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-2">
+                    Function Type:
+                  </label>
+                  <select
+                    value={functionType}
+                    onChange={(e) => setFunctionType(e.target.value)}
+                    disabled={isRunning}
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
-                      index <= currentStep 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white/10 text-white/50'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <span className={`${
-                      index <= currentStep ? 'text-white' : 'text-white/50'
-                    }`}>
-                      {step}
-                    </span>
-                    {index === currentStep && isRunning && (
-                      <ChevronRight className="w-4 h-4 ml-auto text-blue-400 animate-pulse" />
-                    )}
-                  </motion.div>
-                ))}
+                    <option value="constant-0" className="bg-gray-800">Constant (f=0)</option>
+                    <option value="constant-1" className="bg-gray-800">Constant (f=1)</option>
+                    <option value="balanced" className="bg-gray-800">Balanced</option>
+                  </select>
+                  <p className="text-white/60 text-xs mt-1">
+                    {functionTypes[functionType].description}
+                  </p>
+                </div>
+
+                <div className="bg-white/5 rounded-lg p-3">
+                  <label className="flex items-center text-white/80 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isUsingBackend}
+                      onChange={(e) => setIsUsingBackend(e.target.checked)}
+                      className="mr-2 rounded"
+                    />
+                    Use Backend Quantum Simulation
+                  </label>
+                  <p className="text-white/60 text-xs mt-1">
+                    {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-red-300 text-sm">{error}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={runAlgorithm}
+                    disabled={isRunning}
+                    className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    {isRunning ? 'Running...' : 'Run Algorithm'}
+                  </button>
+                  
+                  <button
+                    onClick={resetAlgorithm}
+                    className="quantum-button-secondary flex items-center justify-center"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Results */}
+          {/* Measurement Results */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -466,6 +453,42 @@ const DeutschJozsa = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Circuit */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="quantum-card"
+        >
+          <div className="flex flex-col items-center">
+            {/* Quantum Circuit */}
+            <div className="w-full max-w-4xl">
+              <h3 className="text-2xl font-bold text-white mb-6 text-center">Quantum Circuit</h3>
+              <div className="bg-white/5 rounded-xl p-6 flex items-center justify-center">
+                {(() => {
+                  try {
+                    return (
+                      <CircuitVisualizer 
+                        algorithm="deutsch-jozsa"
+                        functionType={functionType}
+                        currentStep={currentStep}
+                        isRunning={isRunning}
+                      />
+                    )
+                  } catch (error) {
+                    console.error('CircuitVisualizer error:', error)
+                    return (
+                      <div className="flex items-center justify-center h-24">
+                        <p className="text-white/60">Circuit visualization temporarily unavailable</p>
+                      </div>
+                    )
+                  }
+                })()}
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

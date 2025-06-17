@@ -39,15 +39,26 @@ const Grover = () => {
       const timer = setTimeout(() => {
         if (currentStep < steps.length - 1) {
           setCurrentStep(currentStep + 1)
+          // Always run animation for visual effect
           updateQuantumState(currentStep + 1)
         } else {
           setIsRunning(false)
-          determineResult()
+          // Animation completed - now apply final results
+          if (isUsingBackend && apiResult) {
+            // Apply backend results after animation
+            if (apiResult.success && apiResult.probabilities) {
+              setProbabilities(apiResult.probabilities)
+              setResult(`Target item |${targetItem.toString(2).padStart(numQubits, '0')}⟩ found with ${(apiResult.success_probability * 100).toFixed(1)}% probability after ${apiResult.optimal_iterations} iterations (Backend Result)`)
+            }
+          } else if (!isUsingBackend) {
+            // Local simulation result
+            determineResult()
+          }
         }
       }, 1800)
       return () => clearTimeout(timer)
     }
-  }, [isRunning, currentStep])
+  }, [isRunning, currentStep, isUsingBackend, apiResult, targetItem, numQubits])
 
   const updateQuantumState = (step) => {
     let newProbs = new Array(numItems).fill(0)
@@ -89,8 +100,11 @@ const Grover = () => {
   }
 
   const determineResult = () => {
-    const successProb = probabilities[targetItem]
-    setResult(`Target item |${targetItem.toString(2).padStart(numQubits, '0')}⟩ found with ${(successProb * 100).toFixed(1)}% probability after ${optimalIterations} iterations`)
+    // Only determine result for local simulation, not backend
+    if (!isUsingBackend) {
+      const successProb = probabilities[targetItem]
+      setResult(`Target item |${targetItem.toString(2).padStart(numQubits, '0')}⟩ found with ${(successProb * 100).toFixed(1)}% probability after ${optimalIterations} iterations`)
+    }
   }
 
   const runAlgorithm = async () => {
@@ -107,13 +121,10 @@ const Grover = () => {
         const data = await runGroverAlgorithm(targetItem, optimalIterations, numQubits)
         setApiResult(data)
         
-        // Update visualization with backend results
-        if (data.success && data.probabilities) {
-          setProbabilities(data.probabilities)
-          setResult(`Target item |${targetItem.toString(2).padStart(numQubits, '0')}⟩ found with ${(data.success_probability * 100).toFixed(1)}% probability after ${data.optimal_iterations} iterations (Backend Result)`)
-        }
+        // Store backend results but don't display them yet - let animation run first
+        // The animation will run and then backend results will be applied when animation completes
         
-        // Animate through steps for visualization
+        // Start visual animation
         updateQuantumState(0)
       } else {
         // Use local simulation
@@ -125,8 +136,6 @@ const Grover = () => {
       setIsUsingBackend(false)
       // Fall back to local simulation
       updateQuantumState(0)
-    } finally {
-      // Keep isRunning true to show animation
     }
   }
 
@@ -250,179 +259,152 @@ const Grover = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Circuit and Controls */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Algorithm Steps */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
             className="quantum-card"
           >
-            <h3 className="text-2xl font-bold text-white mb-6">Quantum Circuit</h3>
-            
-            <div className="bg-white/5 rounded-xl p-6 mb-6">
-              {(() => {
-                try {
-                  return (
-                    <CircuitVisualizer 
-                      algorithm="grover"
-                      numQubits={numQubits}
-                      targetItem={targetItem}
-                      currentStep={currentStep}
-                      currentIteration={currentIteration}
-                      isRunning={isRunning}
-                    />
-                  )
-                } catch (error) {
-                  console.error('CircuitVisualizer error:', error)
-                  return (
-                    <div className="flex items-center justify-center h-24">
-                      <p className="text-white/60">Circuit visualization temporarily unavailable</p>
-                    </div>
-                  )
-                }
-              })()}
+            <h3 className="text-2xl font-bold text-white mb-6">Algorithm Steps</h3>
+            <div className="space-y-3">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className={`flex items-center p-3 rounded-lg ${
+                    index <= currentStep 
+                      ? 'bg-green-500/20 border-green-500/50' 
+                      : 'bg-white/5 border-white/10'
+                  } border`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
+                    index <= currentStep 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-white/10 text-white/50'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <span className={`${
+                    index <= currentStep ? 'text-white' : 'text-white/50'
+                  }`}>
+                    {step}
+                  </span>
+                  {index === currentStep && isRunning && (
+                    <ChevronRight className="w-4 h-4 ml-auto text-green-400 animate-pulse" />
+                  )}
+                </motion.div>
+              ))}
             </div>
 
             {/* Controls */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-white/80 text-sm font-medium mb-2">
-                    Number of Qubits:
-                  </label>
-                  <select
-                    value={numQubits}
-                    onChange={(e) => {
-                      const newQubits = parseInt(e.target.value)
-                      setNumQubits(newQubits)
-                      setTargetItem(Math.min(targetItem, Math.pow(2, newQubits) - 1))
-                      setProbabilities(new Array(Math.pow(2, newQubits)).fill(0))
-                    }}
-                    disabled={isRunning}
-                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="2" className="bg-gray-800">2 qubits (4 items)</option>
-                    <option value="3" className="bg-gray-800">3 qubits (8 items)</option>
-                    <option value="4" className="bg-gray-800">4 qubits (16 items)</option>
-                  </select>
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Controls</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-white/80 text-sm font-medium mb-2">
+                      Number of Qubits:
+                    </label>
+                    <select
+                      value={numQubits}
+                      onChange={(e) => {
+                        const newQubits = parseInt(e.target.value)
+                        setNumQubits(newQubits)
+                        setTargetItem(Math.min(targetItem, Math.pow(2, newQubits) - 1))
+                        setProbabilities(new Array(Math.pow(2, newQubits)).fill(0))
+                      }}
+                      disabled={isRunning}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="2" className="bg-gray-800">2 qubits (4 items)</option>
+                      <option value="3" className="bg-gray-800">3 qubits (8 items)</option>
+                      <option value="4" className="bg-gray-800">4 qubits (16 items)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-white/80 text-sm font-medium mb-2">
+                      Target Item:
+                    </label>
+                    <select
+                      value={targetItem}
+                      onChange={(e) => setTargetItem(parseInt(e.target.value))}
+                      disabled={isRunning}
+                      className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      {Array.from({ length: numItems }, (_, i) => (
+                        <option key={i} value={i} className="bg-gray-800">
+                          |{i.toString(2).padStart(numQubits, '0')}⟩ (item {i})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-white/80 text-sm font-medium mb-2">
-                    Target Item:
-                  </label>
-                  <select
-                    value={targetItem}
-                    onChange={(e) => setTargetItem(parseInt(e.target.value))}
-                    disabled={isRunning}
-                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    {Array.from({ length: numItems }, (_, i) => (
-                      <option key={i} value={i} className="bg-gray-800">
-                        |{i.toString(2).padStart(numQubits, '0')}⟩ (item {i})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-3">
-                <p className="text-white/70 text-sm">
-                  <strong className="text-green-300">Optimal iterations:</strong> {optimalIterations} 
-                  <span className="ml-4">
-                    <strong className="text-green-300">Database size:</strong> {numItems} items
-                  </span>
-                </p>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-3">
-                <label className="flex items-center text-white/80 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={isUsingBackend}
-                    onChange={(e) => setIsUsingBackend(e.target.checked)}
-                    className="mr-2 rounded"
-                  />
-                  Use Backend Quantum Simulation
-                </label>
-                <p className="text-white/60 text-xs mt-1">
-                  {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
-                </p>
-              </div>
-
-              {error && (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                  <p className="text-red-300 text-sm">{error}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={runAlgorithm}
-                  disabled={isRunning}
-                  className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isRunning ? 'Searching...' : 'Run Search'}
-                </button>
-                
-                <button
-                  onClick={resetAlgorithm}
-                  className="quantum-button-secondary flex items-center justify-center"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Algorithm Steps */}
-            <div className="mt-8">
-              <h4 className="text-lg font-semibold text-white mb-4">Algorithm Steps</h4>
-              <div className="space-y-3">
-                {steps.map((step, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className={`flex items-center p-3 rounded-lg ${
-                      index <= currentStep 
-                        ? 'bg-green-500/20 border-green-500/50' 
-                        : 'bg-white/5 border-white/10'
-                    } border`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
-                      index <= currentStep 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-white/10 text-white/50'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <span className={`${
-                      index <= currentStep ? 'text-white' : 'text-white/50'
-                    }`}>
-                      {step}
+                <div className="bg-white/5 rounded-lg p-3">
+                  <p className="text-white/70 text-sm">
+                    <strong className="text-green-300">Optimal iterations:</strong> {optimalIterations} 
+                    <span className="ml-4">
+                      <strong className="text-green-300">Database size:</strong> {numItems} items
                     </span>
-                    {index === currentStep && isRunning && (
-                      <ChevronRight className="w-4 h-4 ml-auto text-green-400 animate-pulse" />
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-
-              {currentIteration > 0 && (
-                <div className="mt-4 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                  <p className="text-green-300 text-sm">
-                    <strong>Iteration {currentIteration + 1} of {optimalIterations}</strong> - Amplifying target amplitude
                   </p>
                 </div>
-              )}
+                <div className="bg-white/5 rounded-lg p-3">
+                  <label className="flex items-center text-white/80 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isUsingBackend}
+                      onChange={(e) => setIsUsingBackend(e.target.checked)}
+                      className="mr-2 rounded"
+                    />
+                    Use Backend Quantum Simulation
+                  </label>
+                  <p className="text-white/60 text-xs mt-1">
+                    {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-red-300 text-sm">{error}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={runAlgorithm}
+                    disabled={isRunning}
+                    className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    {isRunning ? 'Searching...' : 'Run Search'}
+                  </button>
+                  
+                  <button
+                    onClick={resetAlgorithm}
+                    className="quantum-button-secondary flex items-center justify-center"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {currentIteration > 0 && (
+              <div className="mt-4 bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                <p className="text-green-300 text-sm">
+                  <strong>Iteration {currentIteration + 1} of {optimalIterations}</strong> - Amplifying target amplitude
+                </p>
+              </div>
+            )}
           </motion.div>
 
-          {/* Results */}
+          {/* Search Results */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -517,6 +499,44 @@ const Grover = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Circuit */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="quantum-card"
+        >
+          <div className="flex flex-col items-center">
+            {/* Quantum Circuit */}
+            <div className="w-full max-w-4xl">
+              <h3 className="text-2xl font-bold text-white mb-6 text-center">Quantum Circuit</h3>
+              <div className="bg-white/5 rounded-xl p-6 flex items-center justify-center">
+                {(() => {
+                  try {
+                    return (
+                      <CircuitVisualizer 
+                        algorithm="grover"
+                        numQubits={numQubits}
+                        targetItem={targetItem}
+                        currentStep={currentStep}
+                        currentIteration={currentIteration}
+                        isRunning={isRunning}
+                      />
+                    )
+                  } catch (error) {
+                    console.error('CircuitVisualizer error:', error)
+                    return (
+                      <div className="flex items-center justify-center h-24">
+                        <p className="text-white/60">Circuit visualization temporarily unavailable</p>
+                      </div>
+                    )
+                  }
+                })()}
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

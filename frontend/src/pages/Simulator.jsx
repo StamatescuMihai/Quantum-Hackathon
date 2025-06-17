@@ -101,25 +101,30 @@ const Simulator = () => {
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="flex justify-center mb-6">
-            <div className="p-3 bg-gradient-to-br from-quantum-400 to-quantum-600 rounded-2xl">
-              <Calculator className="w-12 h-12 text-white" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <div className="flex justify-center mb-6">
+              <div className="p-3 bg-gradient-to-br from-quantum-400 to-quantum-600 rounded-2xl">
+                <Calculator className="w-12 h-12 text-white" />
+              </div>
             </div>
-          </div>
-          
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Quantum Circuit Simulator
-          </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto">
-            Experiment with quantum algorithms and build custom circuits. 
-            Visualize quantum states and observe quantum mechanical phenomena in real-time.
-          </p>
-        </motion.div>        {/* Simulator Features */}
+            
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+              Quantum Circuit Simulator
+            </h1>
+            <p className="text-xl text-white/80 max-w-3xl mx-auto">
+              Experiment with quantum algorithms and build custom circuits. 
+              Visualize quantum states and observe quantum mechanical phenomena in real-time.
+            </p>
+            <p className="text-4xl sm:text-xl font-bold text-white mb-4">
+              Still a Work in Progress!
+              Lack of BackEnd may cause innacurate results.
+            </p>
+          </motion.div>
+        {/* Simulator Features */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

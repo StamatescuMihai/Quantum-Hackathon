@@ -206,6 +206,10 @@ async def get_deutsch_jozsa_info():
             "Quantum interference", 
             "Oracle queries",
             "Superposition"
-        ],
-        "significance": "First algorithm to show exponential quantum advantage"
+        ],        "significance": "First algorithm to show exponential quantum advantage"
     }
+
+@router.post("/deutsch-jozsa/simulate", response_model=DeutschJozsaResponse)
+async def simulate_deutsch_jozsa_algorithm(request: DeutschJozsaRequest):
+    """Alias for /deutsch-jozsa/run - simulate Deutsch-Jozsa algorithm"""
+    return await run_deutsch_jozsa_algorithm(request)

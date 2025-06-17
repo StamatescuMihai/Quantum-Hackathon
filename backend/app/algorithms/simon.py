@@ -191,8 +191,7 @@ async def run_simon_algorithm(request: SimonRequest):
         }
         
         return SimonResponse(
-            success=True,
-            circuit_data=circuit_data,
+            success=True,            circuit_data=circuit_data,
             quantum_state=quantum_state,
             probabilities=probabilities,
             measurement_counts=counts,
@@ -203,6 +202,11 @@ async def run_simon_algorithm(request: SimonRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/simon/simulate", response_model=SimonResponse)
+async def simulate_simon_algorithm(request: SimonRequest):
+    """Alias for /simon/run - simulate Simon's algorithm"""
+    return await run_simon_algorithm(request)
 
 def extract_gate_sequence(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
     """Extract gate sequence from circuit for visualization"""

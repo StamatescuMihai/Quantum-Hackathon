@@ -103,12 +103,25 @@ const Simon = () => {
   }
 
   const determineResult = () => {
-    const equations = [
-      `y₁ · s = 0 (mod 2)`,
-      `y₂ · s = 0 (mod 2)`,
-    ]
-    setLinearEquations(equations)
-    setResult(`Period found: s = ${hiddenPeriod}`)
+    // Check if we have backend results to apply
+    if (isUsingBackend && apiResult && apiResult.success) {
+      // Apply backend results after animation completes
+      if (apiResult.probabilities) {
+        setProbabilities(apiResult.probabilities)
+      }
+      if (apiResult.linear_equations) {
+        setLinearEquations(apiResult.linear_equations)
+      }
+      setResult(`Hidden period found: ${apiResult.discovered_period || hiddenPeriod} (Backend Result)`)
+    } else {
+      // Use local simulation results
+      const equations = [
+        `y₁ · s = 0 (mod 2)`,
+        `y₂ · s = 0 (mod 2)`,
+      ]
+      setLinearEquations(equations)
+      setResult(`Period found: s = ${hiddenPeriod}`)
+    }
   }
 
   const runAlgorithm = async () => {
@@ -120,33 +133,19 @@ const Simon = () => {
       setApiResult(null)
       setLinearEquations([])
       
+      // Always start the animation first
+      updateQuantumState(0)
+      
       if (isUsingBackend) {
-        // Call backend API
+        // Call backend API in background while animation runs
         const numQubits = hiddenPeriod.length * 2  // Simon needs 2n qubits for n-bit period
         const data = await runSimonAlgorithm(hiddenPeriod, numQubits)
         setApiResult(data)
-        
-        // Update visualization with backend results
-        if (data.success && data.probabilities) {
-          setProbabilities(data.probabilities)
-          if (data.linear_equations) {
-            setLinearEquations(data.linear_equations)
-          }
-          setResult(`Hidden period found: ${data.discovered_period || hiddenPeriod} (Backend Result)`)
-        }
-        
-        // Animate through steps for visualization
-        updateQuantumState(0)
-      } else {
-        // Use local simulation
-        updateQuantumState(0)
       }
     } catch (error) {
       console.error('Error running Simon algorithm:', error)
       setError(`Error connecting to backend: ${error.message}. Using local simulation.`)
       setIsUsingBackend(false)
-      // Fall back to local simulation
-      updateQuantumState(0)
     }
   }
 
@@ -273,123 +272,125 @@ const Simon = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Circuit and Controls */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Algorithm Steps */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
             className="quantum-card"
           >
-            <h3 className="text-2xl font-bold text-white mb-6">Quantum Circuit</h3>
-            
-            <div className="bg-white/5 rounded-xl p-6 mb-6">
-              <CircuitVisualizer 
-                algorithm="simon"
-                hiddenPeriod={hiddenPeriod}
-                currentStep={currentStep}
-                isRunning={isRunning}
-              />
+            <h3 className="text-2xl font-bold text-white mb-6">Algorithm Steps</h3>
+            <div className="space-y-3">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className={`flex items-center p-3 rounded-lg ${
+                    index <= currentStep 
+                      ? 'bg-red-500/20 border-red-500/50' 
+                      : 'bg-white/5 border-white/10'
+                  } border`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
+                    index <= currentStep 
+                      ? 'bg-red-500 text-white' 
+                      : 'bg-white/10 text-white/50'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <span className={`${
+                    index <= currentStep ? 'text-white' : 'text-white/50'
+                  }`}>
+                    {step}
+                  </span>
+                  {index === currentStep && isRunning && (
+                    <ChevronRight className="w-4 h-4 ml-auto text-red-400 animate-pulse" />
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Hidden Period Information */}
+            <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+              <p className="text-red-300 text-sm">
+                <strong>Hidden Period:</strong> {hiddenPeriod} 
+                <span className="ml-4">
+                  <strong>Problem Size:</strong> {hiddenPeriod.length}-bit function
+                </span>
+              </p>
+              <p className="text-red-300/80 text-xs mt-1">
+                Classical approach would require ~2^(n/2) queries. Quantum approach needs only O(n) queries!
+              </p>
             </div>
 
             {/* Controls */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-white/80 text-sm font-medium mb-2">
-                  Hidden Period (binary):
-                </label>
-                <input
-                  type="text"
-                  value={hiddenPeriod}
-                  onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="e.g., 11"
-                  maxLength="2"
-                />
-                <p className="text-white/60 text-xs mt-1">
-                  Enter a 2-bit binary string (00, 01, 10, 11)
-                </p>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-3">
-                <label className="flex items-center text-white/80 text-sm">
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Controls</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white/80 text-sm font-medium mb-2">
+                    Hidden Period (binary):
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={isUsingBackend}
-                    onChange={(e) => setIsUsingBackend(e.target.checked)}
-                    className="mr-2 rounded"
+                    type="text"
+                    value={hiddenPeriod}
+                    onChange={(e) => handlePeriodChange(e.target.value)}
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="e.g., 11"
+                    maxLength="2"
                   />
-                  Use Backend Quantum Simulation
-                </label>
-                <p className="text-white/60 text-xs mt-1">
-                  {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
-                </p>
-              </div>
-
-              {error && (
-                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-                  <p className="text-red-300 text-sm">{error}</p>
+                  <p className="text-white/60 text-xs mt-1">
+                    Enter a 2-bit binary string (00, 01, 10, 11)
+                  </p>
                 </div>
-              )}
 
-              <div className="flex gap-3">
-                <button
-                  onClick={runAlgorithm}
-                  disabled={isRunning || !hiddenPeriod || hiddenPeriod === '00'}
-                  className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isRunning ? 'Running...' : 'Run Algorithm'}
-                </button>
-                
-                <button
-                  onClick={resetAlgorithm}
-                  className="quantum-button-secondary flex items-center justify-center"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
-                </button>
-              </div>
-            </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <label className="flex items-center text-white/80 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isUsingBackend}
+                      onChange={(e) => setIsUsingBackend(e.target.checked)}
+                      className="mr-2 rounded"
+                    />
+                    Use Backend Quantum Simulation
+                  </label>
+                  <p className="text-white/60 text-xs mt-1">
+                    {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
+                  </p>
+                </div>
 
-            {/* Algorithm Steps */}
-            <div className="mt-8">
-              <h4 className="text-lg font-semibold text-white mb-4">Algorithm Steps</h4>
-              <div className="space-y-3">
-                {steps.map((step, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className={`flex items-center p-3 rounded-lg ${
-                      index <= currentStep 
-                        ? 'bg-red-500/20 border-red-500/50' 
-                        : 'bg-white/5 border-white/10'
-                    } border`}
+                {error && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-red-300 text-sm">{error}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={runAlgorithm}
+                    disabled={isRunning || !hiddenPeriod || hiddenPeriod === '00'}
+                    className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${
-                      index <= currentStep 
-                        ? 'bg-red-500 text-white' 
-                        : 'bg-white/10 text-white/50'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <span className={`${
-                      index <= currentStep ? 'text-white' : 'text-white/50'
-                    }`}>
-                      {step}
-                    </span>
-                    {index === currentStep && isRunning && (
-                      <ChevronRight className="w-4 h-4 ml-auto text-red-400 animate-pulse" />
-                    )}
-                  </motion.div>
-                ))}
+                    <Play className="w-4 h-4 mr-2" />
+                    {isRunning ? 'Running...' : 'Run Algorithm'}
+                  </button>
+                  
+                  <button
+                    onClick={resetAlgorithm}
+                    className="quantum-button-secondary flex items-center justify-center"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Results */}
+          {/* Measurement Results */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -399,7 +400,18 @@ const Simon = () => {
             <h3 className="text-2xl font-bold text-white mb-6">Measurement Results</h3>
             
             <div className="bg-white/5 rounded-xl p-6 mb-6" style={{ height: '300px' }}>
-              <Bar data={chartData} options={chartOptions} />
+              {(() => {
+                try {
+                  return <Bar data={chartData} options={chartOptions} />
+                } catch (error) {
+                  console.error('Chart rendering error:', error)
+                  return (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-white/60">Chart visualization temporarily unavailable</p>
+                    </div>
+                  )
+                }
+              })()}
             </div>
 
             {/* Linear Equations */}
@@ -482,18 +494,60 @@ const Simon = () => {
                   <strong className="text-red-300">Simon's Promise:</strong> Function f satisfies f(x) = f(x ⊕ s) for some unknown s ≠ 0.
                 </p>
                 <p>
-                  <strong className="text-red-300">Quantum Sampling:</strong> Creates superposition over all inputs and applies the oracle.
+                  <strong className="text-red-300">Quantum Sampling:</strong> Creates superposition over all inputs and applies the oracle to create entanglement.
                 </p>
                 <p>
-                  <strong className="text-red-300">Linear Constraints:</strong> Each measurement gives y where y · s = 0 (mod 2).
+                  <strong className="text-red-300">Linear Constraints:</strong> Each measurement gives y where y · s = 0 (mod 2), providing constraints.
                 </p>
                 <p>
-                  <strong className="text-red-300">System Solution:</strong> Collect n-1 linearly independent equations to solve for s.
+                  <strong className="text-red-300">System Solution:</strong> Collect n-1 linearly independent equations to solve for s over GF(2).
+                </p>
+                <p>
+                  <strong className="text-red-300">Exponential Speedup:</strong> Classical methods need ~2^(n/2) queries, quantum needs O(n).
+                </p>
+                <p>
+                  <strong className="text-red-300">Historical Significance:</strong> Inspired Shor's algorithm and demonstrated structured quantum advantage.
                 </p>
               </div>
             </div>
           </motion.div>
         </div>
+
+        {/* Circuit */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="quantum-card"
+        >
+          <div className="flex flex-col items-center">
+            {/* Quantum Circuit */}
+            <div className="w-full max-w-4xl">
+              <h3 className="text-2xl font-bold text-white mb-6 text-center">Quantum Circuit</h3>
+              <div className="bg-white/5 rounded-xl p-6 flex items-center justify-center">
+                {(() => {
+                  try {
+                    return (
+                      <CircuitVisualizer 
+                        algorithm="simon"
+                        hiddenPeriod={hiddenPeriod}
+                        currentStep={currentStep}
+                        isRunning={isRunning}
+                      />
+                    )
+                  } catch (error) {
+                    console.error('CircuitVisualizer error:', error)
+                    return (
+                      <div className="flex items-center justify-center h-24">
+                        <p className="text-white/60">Circuit visualization temporarily unavailable</p>
+                      </div>
+                    )
+                  }
+                })()}
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

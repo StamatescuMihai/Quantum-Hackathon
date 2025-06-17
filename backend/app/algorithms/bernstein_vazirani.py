@@ -202,6 +202,10 @@ async def get_bernstein_vazirani_info():
             "Hidden string problems",
             "Linear function analysis", 
             "Quantum machine learning",
-            "Cryptographic protocols"
-        ]
+            "Cryptographic protocols"        ]
     }
+
+@router.post("/bernstein-vazirani/simulate", response_model=BernsteinVaziraniResponse)
+async def simulate_bernstein_vazirani_algorithm(request: BernsteinVaziraniRequest):
+    """Alias for /bernstein-vazirani/run - simulate Bernstein-Vazirani algorithm"""
+    return await run_bernstein_vazirani_algorithm(request)
