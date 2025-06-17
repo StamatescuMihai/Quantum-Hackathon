@@ -63,11 +63,6 @@ const Footer = () => {
                   Documentation
                 </a>
               </li>
-              <li>
-                <a href="https://github.com/StamatescuMihai/Quantum-Hackathon/tree/main/shared/notebooks" className="text-white/60 hover:text-white transition-colors">
-                  Jupyter Notebooks
-                </a>
-              </li>
             </ul>
           </div>
         </div>
