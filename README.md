@@ -185,10 +185,10 @@ docker-compose up --build
 ### Task Runner
 ```bash
 # Using justfile
-just install    # Install dependencies
-just run-all    # Run both backend and frontend
-just run-backend  # Run backend server
-just run-frontend  # Run frontend server
+just install
+just run-all
+just run-backend
+just run-frontend
 ```
 
 ## Deployment
