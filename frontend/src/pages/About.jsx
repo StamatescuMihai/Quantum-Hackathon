@@ -231,52 +231,35 @@ const About = () => {
                 View on GitHub
               </a>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white/5 rounded-lg p-6">
-                <div className="text-2xl font-bold text-quantum-300 mb-2">500+</div>
-                <div className="text-white/70">GitHub Stars</div>
-              </div>
-              <div className="bg-white/5 rounded-lg p-6">
-                <div className="text-2xl font-bold text-quantum-300 mb-2">50+</div>
-                <div className="text-white/70">Contributors</div>
-              </div>
-              <div className="bg-white/5 rounded-lg p-6">
-                <div className="text-2xl font-bold text-quantum-300 mb-2">10k+</div>
-                <div className="text-white/70">Learners Reached</div>
-              </div>
-            </div>
           </div>
-        </motion.section>
-
-        <motion.section
+        </motion.section>        <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0 }}
         >
           <div className="quantum-card">
             <h2 className="text-3xl font-bold text-white text-center mb-8">Future Plans</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <div className="text-center">
                 <h3 className="text-xl font-semibold text-white mb-4">Coming Soon</h3>
-                <ul className="space-y-3 text-white/70">
+                <ul className="space-y-3 text-white/70 text-left inline-block">
                   <li className="flex items-center">
-                    Shor's Algorithm Implementation
+                    {'>'} Shor's Algorithm Implementation
                   </li>
                   <li className="flex items-center">
-                    Quantum Machine Learning Modules
+                    {'>'} Quantum Machine Learning Modules
                   </li>
                   <li className="flex items-center">
-                    Real Quantum Hardware Integration
+                    {'>'} Real Quantum Hardware Integration
                   </li>
                   <li className="flex items-center">
-                    Advanced Circuit Builder
+                    {'>'} Advanced Circuit Builder
                   </li>
                 </ul>
               </div>
-              <div>
+              <div className="text-center">
                 <h3 className="text-xl font-semibold text-white mb-4">Long-term Vision</h3>
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-white/70 leading-relaxed text-justify inline-block max-w-md">
                   Our goal is to become the go-to platform for quantum education, 
                   supporting everything from basic concepts to advanced research. 
                   We envision a future where quantum literacy is as common as 
