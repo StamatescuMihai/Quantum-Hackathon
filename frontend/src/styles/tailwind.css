@@ -162,9 +162,23 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
   .animate-quantum-pulse {
     animation: quantum-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .text-glint {
+    background: linear-gradient(
+      110deg,
+      #667eea 0%,
+      #764ba2 25%,
+      #ffffff 50%,
+      #764ba2 75%,
+      #667eea 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: glint 20s ease-in-out infinite;
   }
 }
 
@@ -176,6 +190,15 @@
   50% {
     opacity: 0.8;
     transform: scale(1.05);
+  }
+}
+
+@keyframes glint {
+  0%, 100% {
+    background-position: -200% 0;
+  }
+  50% {
+    background-position: 200% 0;
   }
 }
 

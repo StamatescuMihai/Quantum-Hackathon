@@ -97,10 +97,9 @@ const Home = () => {
                 <Atom className="w-12 h-12 text-white animate-spin" style={{ animationDuration: '10s' }} />
               </div>
             </div>
-            
-            <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6">
+              <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6">
               Step into the{' '}
-              <span className="text-gradient bg-gradient-to-r from-quantum-300 to-quantum-500 bg-clip-text text-transparent">
+              <span className="text-glint">
                 Quantum Universe
               </span>
             </h1>
