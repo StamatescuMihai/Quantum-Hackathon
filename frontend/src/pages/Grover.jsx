@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import CircuitVisualizer from '../components/CircuitVisualizer'
 import { Play, RotateCcw, ChevronRight, Search, Target, Layers } from 'lucide-react'
 import { Bar } from 'react-chartjs-2'
+import { runGroverAlgorithm } from '../services/api'
 
 const Grover = () => {
   // Scroll to top when component mounts
@@ -17,6 +18,9 @@ const Grover = () => {
   const [currentIteration, setCurrentIteration] = useState(0)
   const [result, setResult] = useState('')
   const [probabilities, setProbabilities] = useState(new Array(8).fill(0))
+  const [apiResult, setApiResult] = useState(null)
+  const [error, setError] = useState('')
+  const [isUsingBackend, setIsUsingBackend] = useState(true)
 
   const numItems = Math.pow(2, numQubits)
   const optimalIterations = Math.floor(Math.PI * Math.sqrt(numItems) / 4)
@@ -95,26 +99,34 @@ const Grover = () => {
       setCurrentStep(0)
       setCurrentIteration(0)
       setResult('')
-      updateQuantumState(0)
+      setError('')
+      setApiResult(null)
       
-      // Call backend API
-      const response = await fetch('/api/grover', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          num_qubits: numQubits,
-          target_item: targetItem
-        }),
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Grover result:', data)
+      if (isUsingBackend) {
+        // Call backend API
+        const data = await runGroverAlgorithm(targetItem, optimalIterations, numQubits)
+        setApiResult(data)
+        
+        // Update visualization with backend results
+        if (data.success && data.probabilities) {
+          setProbabilities(data.probabilities)
+          setResult(`Target item |${targetItem.toString(2).padStart(numQubits, '0')}⟩ found with ${(data.success_probability * 100).toFixed(1)}% probability after ${data.optimal_iterations} iterations (Backend Result)`)
+        }
+        
+        // Animate through steps for visualization
+        updateQuantumState(0)
+      } else {
+        // Use local simulation
+        updateQuantumState(0)
       }
     } catch (error) {
       console.error('Error running Grover algorithm:', error)
+      setError(`Error connecting to backend: ${error.message}. Using local simulation.`)
+      setIsUsingBackend(false)
+      // Fall back to local simulation
+      updateQuantumState(0)
+    } finally {
+      // Keep isRunning true to show animation
     }
   }
 
@@ -123,6 +135,8 @@ const Grover = () => {
     setCurrentStep(0)
     setCurrentIteration(0)
     setResult('')
+    setError('')
+    setApiResult(null)
     setProbabilities(new Array(numItems).fill(0))
   }
 
@@ -322,6 +336,27 @@ const Grover = () => {
                 </p>
               </div>
 
+              <div className="bg-white/5 rounded-lg p-3">
+                <label className="flex items-center text-white/80 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={isUsingBackend}
+                    onChange={(e) => setIsUsingBackend(e.target.checked)}
+                    className="mr-2 rounded"
+                  />
+                  Use Backend Quantum Simulation
+                </label>
+                <p className="text-white/60 text-xs mt-1">
+                  {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
+                </p>
+              </div>
+
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
                   onClick={runAlgorithm}
@@ -419,6 +454,43 @@ const Grover = () => {
               >
                 <h4 className="text-lg font-semibold text-green-300 mb-2">Search Result</h4>
                 <p className="text-white">{result}</p>
+              </motion.div>
+            )}
+
+            {/* Backend API Results */}
+            {apiResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-lg p-4 mb-6"
+              >
+                <h4 className="text-lg font-semibold text-blue-300 mb-3">Backend Quantum Simulation Results</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-white/80">
+                      <strong className="text-blue-300">Success:</strong> {apiResult.success ? 'Yes' : 'No'}
+                    </p>
+                    <p className="text-white/80">
+                      <strong className="text-blue-300">Success Probability:</strong> {(apiResult.success_probability * 100).toFixed(2)}%
+                    </p>
+                    <p className="text-white/80">
+                      <strong className="text-blue-300">Optimal Iterations:</strong> {apiResult.optimal_iterations}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-white/80">
+                      <strong className="text-blue-300">Measurement Counts:</strong>
+                    </p>
+                    <div className="text-xs bg-black/30 rounded p-2 mt-1 max-h-20 overflow-y-auto">
+                      {Object.entries(apiResult.measurement_counts || {}).map(([state, count]) => (
+                        <div key={state} className="flex justify-between">
+                          <span>|{state}⟩:</span>
+                          <span>{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
 

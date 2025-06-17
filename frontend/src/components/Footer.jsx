@@ -1,5 +1,6 @@
 import React from 'react'
 import { Github, Mail, BookOpen, Heart } from 'lucide-react'
+import BackendStatus from './BackendStatus'
 
 const Footer = () => {
   return (
@@ -76,11 +77,10 @@ const Footer = () => {
           <p className="text-white/60 text-sm">
             © 2025 Quantum Algorithm Explorer. Built for educational purposes.
           </p>
-          <div className="flex items-center space-x-1 text-white/60 text-sm mt-4 sm:mt-0">
-            <span>Made with</span>
-            <Heart className="w-4 h-4 text-red-400" />
-            <span>for quantum education</span>
-          </div>
+        {/* Backend Status */}
+          <div className="hidden md:flex items-center mr-4">
+            <BackendStatus />
+          </div> 
         </div>
       </div>
     </footer>

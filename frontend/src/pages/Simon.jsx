@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import CircuitVisualizer from '../components/CircuitVisualizer'
 import { Play, RotateCcw, ChevronRight, Zap, Clock, Repeat } from 'lucide-react'
 import { Bar } from 'react-chartjs-2'
+import { runSimonAlgorithm } from '../services/api'
 
 const Simon = () => {
   // Scroll to top when component mounts
@@ -16,6 +17,9 @@ const Simon = () => {
   const [result, setResult] = useState('')
   const [probabilities, setProbabilities] = useState(new Array(16).fill(0))
   const [linearEquations, setLinearEquations] = useState([])
+  const [apiResult, setApiResult] = useState(null)
+  const [error, setError] = useState('')
+  const [isUsingBackend, setIsUsingBackend] = useState(true)
 
   const steps = [
     "Initialize qubits in |0⟩ state",
@@ -112,30 +116,37 @@ const Simon = () => {
       setIsRunning(true)
       setCurrentStep(0)
       setResult('')
+      setError('')
+      setApiResult(null)
       setLinearEquations([])
-      updateQuantumState(0)
       
-      // Call backend API
-      const response = await fetch('/api/simon', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          hidden_period: hiddenPeriod,
-          num_qubits: 4
-        }),
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Simon algorithm result:', data)
-        if (data.linear_equations) {
-          setLinearEquations(data.linear_equations)
+      if (isUsingBackend) {
+        // Call backend API
+        const numQubits = hiddenPeriod.length * 2  // Simon needs 2n qubits for n-bit period
+        const data = await runSimonAlgorithm(hiddenPeriod, numQubits)
+        setApiResult(data)
+        
+        // Update visualization with backend results
+        if (data.success && data.probabilities) {
+          setProbabilities(data.probabilities)
+          if (data.linear_equations) {
+            setLinearEquations(data.linear_equations)
+          }
+          setResult(`Hidden period found: ${data.discovered_period || hiddenPeriod} (Backend Result)`)
         }
+        
+        // Animate through steps for visualization
+        updateQuantumState(0)
+      } else {
+        // Use local simulation
+        updateQuantumState(0)
       }
     } catch (error) {
       console.error('Error running Simon algorithm:', error)
+      setError(`Error connecting to backend: ${error.message}. Using local simulation.`)
+      setIsUsingBackend(false)
+      // Fall back to local simulation
+      updateQuantumState(0)
     }
   }
 
@@ -143,6 +154,8 @@ const Simon = () => {
     setIsRunning(false)
     setCurrentStep(0)
     setResult('')
+    setError('')
+    setApiResult(null)
     setLinearEquations([])
     setProbabilities(new Array(16).fill(0))
   }
@@ -298,6 +311,27 @@ const Simon = () => {
                 </p>
               </div>
 
+              <div className="bg-white/5 rounded-lg p-3">
+                <label className="flex items-center text-white/80 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={isUsingBackend}
+                    onChange={(e) => setIsUsingBackend(e.target.checked)}
+                    className="mr-2 rounded"
+                  />
+                  Use Backend Quantum Simulation
+                </label>
+                <p className="text-white/60 text-xs mt-1">
+                  {isUsingBackend ? 'Using Qiskit backend for accurate quantum simulation' : 'Using local approximation for visualization'}
+                </p>
+              </div>
+
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
                   onClick={runAlgorithm}
@@ -390,6 +424,53 @@ const Simon = () => {
               >
                 <h4 className="text-lg font-semibold text-red-300 mb-2">Result</h4>
                 <p className="text-white">{result}</p>
+              </motion.div>
+            )}
+
+            {/* Backend API Results */}
+            {apiResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 rounded-lg p-4 mb-6"
+              >
+                <h4 className="text-lg font-semibold text-orange-300 mb-3">Backend Quantum Simulation Results</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-white/80">
+                      <strong className="text-orange-300">Success:</strong> {apiResult.success ? 'Yes' : 'No'}
+                    </p>
+                    <p className="text-white/80">
+                      <strong className="text-orange-300">Discovered Period:</strong> {apiResult.discovered_period || 'Unknown'}
+                    </p>
+                    <p className="text-white/80">
+                      <strong className="text-orange-300">Iterations:</strong> {apiResult.iterations || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-white/80">
+                      <strong className="text-orange-300">Measurement Counts:</strong>
+                    </p>
+                    <div className="text-xs bg-black/30 rounded p-2 mt-1 max-h-20 overflow-y-auto">
+                      {Object.entries(apiResult.measurement_counts || {}).map(([state, count]) => (
+                        <div key={state} className="flex justify-between">
+                          <span>|{state}⟩:</span>
+                          <span>{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {apiResult.linear_equations && apiResult.linear_equations.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-orange-300 text-sm font-medium mb-2">Linear Equations:</p>
+                    <div className="text-xs bg-black/30 rounded p-2">
+                      {apiResult.linear_equations.map((eq, index) => (
+                        <div key={index} className="text-white/70">{eq}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 

@@ -28,33 +28,28 @@ const About = () => {
   const team = [
     {
       name: "Romaniuc Albert-Iulian",
-      role: "Quantum Algorithms Researcher",
-      description: "First year student enrolled in National University Politehnica Bucharest. Algebra and quantum expert.",
-      image: "images/images.jpg"
+      role: "Software Engineer & Algorithm Researcher",
+      image: "images/albert.jpg"
     },
     {
       name: "Visinescu Nicolas-Catalin",
-      role: "System Engineer and Developer",
-      description: "Python developer, system manager.",
-      image: "images/images.jpg"
+      role: "Software & System Engineer",
+      image: "images/nicolas.jpg"
     },
     {
       name: "Stamatescu Mihai",
-      role: "Backend Developer and Frontend Developer",
-      description: "Python developer with expertise in quantum simulation, API development and React language.",
-      image: "images/images.jpg"
+      role: "Software & Backend Engineer",
+      image: "images/Stami.png"
     },
     {
       name: "Cavescu Dumitru-Andrei",
-      role: "",
-      description: "",
-      image: "images/images.jpg"
+      role: "Web Designer",
+      image: "images/dimi.jpg"
     },
     {
       name: "Tanasescu Razvan",
-      role: "",
-      description: "",
-      image: "images/images.jpg"
+      role: "Web Developer",
+      image: "images/razvan.jpg"
     }
   ]
 
@@ -185,7 +180,7 @@ const About = () => {
           transition={{ delay: 0.7 }}
           className="mb-16"
         >
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Meet the Team</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Meet the QHackers</h2>
           <div className="flex flex-wrap justify-center gap-8">
             {team.map((member, index) => (
               <motion.div
@@ -266,19 +261,15 @@ const About = () => {
                 <h3 className="text-xl font-semibold text-white mb-4">Coming Soon</h3>
                 <ul className="space-y-3 text-white/70">
                   <li className="flex items-center">
-                    <Heart className="w-4 h-4 text-red-400 mr-2" />
                     Shor's Algorithm Implementation
                   </li>
                   <li className="flex items-center">
-                    <Heart className="w-4 h-4 text-red-400 mr-2" />
                     Quantum Machine Learning Modules
                   </li>
                   <li className="flex items-center">
-                    <Heart className="w-4 h-4 text-red-400 mr-2" />
                     Real Quantum Hardware Integration
                   </li>
                   <li className="flex items-center">
-                    <Heart className="w-4 h-4 text-red-400 mr-2" />
                     Advanced Circuit Builder
                   </li>
                 </ul>

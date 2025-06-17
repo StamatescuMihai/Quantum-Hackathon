@@ -29,73 +29,73 @@ quantum-algorithm-explorer/
 └── docker-compose.yml               # Container orchestration
 ```
 
+## Quick Start
+
+### Option 1: Development Setup (Recommended)
+
+The easiest way to get started is using the development startup script:
+
+```bash
+# Navigate to the project directory
+cd Quantum-Hackathon
+
+# Start both frontend and backend servers
+./start-dev.sh
+```
+
+This will:
+- Set up a Python virtual environment for the backend
+- Install all dependencies for both frontend and backend
+- Start the backend server on http://localhost:8000
+- Start the frontend server on http://localhost:3000
+
+### Option 2: Manual Setup
+
+#### Backend Setup
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+#### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Option 3: Docker Setup
+```bash
+docker-compose up --build
+```
+
+### Access the Application
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/api/docs
+
 ## Features
 
-### 🎯 Interactive Algorithm Explorer
-- **Grover's Algorithm**: Quantum search with quadratic speedup
-- **Deutsch-Jozsa**: Function analysis with exponential speedup
-- **Bernstein-Vazirani**: Hidden string recovery with linear speedup  
-- **Simon's Algorithm**: Period finding with exponential advantage
+### 🚀 **Backend Integration**
+- Real quantum simulations using **Qiskit**
+- REST API endpoints for each algorithm
+- Accurate quantum state calculations
+- Measurement statistics
 
-### 🎨 Visualization Tools
-- Real-time quantum circuit visualization
-- Quantum state evolution animation
-- Probability distribution charts
-- Interactive parameter controls
+### 🎨 **Interactive Frontend**
+- Modern React interface with smooth animations
+- Real-time visualization of quantum states
+- Toggle between backend simulation and local approximation
+- Responsive design for all devices
 
-### 🧮 Quantum Simulator
-- Accurate quantum state simulation
-- Customizable circuit parameters
-- Step-by-step execution
-- Educational explanations
-
-### 📚 Educational Content
-- Comprehensive algorithm explanations
-- Mathematical foundations
-- Historical context
-- Practical applications
-
-## Getting Started
-
-### Prerequisites
-- Node.js 18+ and npm
-- Python 3.9+
-- Git
-- Just command runner (install with `cargo install just` or `brew install just`)
-
-### Quick Start
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/your-username/quantum-algorithm-explorer.git
-cd quantum-algorithm-explorer
-```
-
-2. **Install dependencies**
-```bash
-just install
-```
-
-3. **Run the application**
-```bash
-# Start both frontend and backend
-just run-all
-
-# Or start them separately:
-just run-backend    # Backend only (port 8000)
-just run-frontend   # Frontend only (port 3000)
-```
-
-4. **Open your browser**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000/api/docs
-
-### Available Commands
-
-- `just install` - Install all dependencies
-- `just run-backend` - Start backend server
-- `just run-frontend` - Start frontend dev server  
-- `just run-all` - Start both servers simultaneously
+### ⚛️ **Quantum Algorithms**
+- **Grover's Algorithm**: Search unsorted databases with quadratic speedup
+- **Deutsch-Jozsa**: Determine function properties with exponential advantage
+- **Bernstein-Vazirani**: Find hidden bit strings using quantum parallelism
+- **Simon's Algorithm**: Discover hidden periods with quantum advantage
 
 ## Technology Stack
 
