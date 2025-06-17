@@ -47,8 +47,9 @@ def create_bernstein_vazirani_circuit(hidden_string: str, num_qubits: int) -> Qu
     # Apply Hadamard to input qubits only
     circuit.h(range(num_qubits))
     
-    # Measure input qubits
-    circuit.measure(range(num_qubits), range(num_qubits))
+    # Measure input qubits - note the order: measure qubit i to classical bit i
+    for i in range(num_qubits):
+        circuit.measure(i, i)
     
     return circuit
 
@@ -117,8 +118,18 @@ def simulate_bernstein_vazirani(circuit: QuantumCircuit) -> tuple:
 def recover_hidden_string(counts: Dict[str, int], num_qubits: int) -> str:
     """Recover the hidden string from measurement results"""
     # The most frequent measurement should be the hidden string
+    if not counts:
+        return "0" * num_qubits
+    
     most_frequent = max(counts.items(), key=lambda x: x[1])
-    return most_frequent[0]
+    measured_string = most_frequent[0]
+    
+    # Ensure the string has the correct length
+    if len(measured_string) != num_qubits:
+        measured_string = measured_string.zfill(num_qubits)[-num_qubits:]
+    
+    # Reverse string (Qiskit convention)
+    return measured_string[::-1]
 
 @router.post("/bernstein-vazirani/run", response_model=BernsteinVaziraniResponse)
 async def run_bernstein_vazirani_algorithm(request: BernsteinVaziraniRequest):
@@ -134,10 +145,16 @@ async def run_bernstein_vazirani_algorithm(request: BernsteinVaziraniRequest):
         # Create and simulate circuit
         circuit = create_bernstein_vazirani_circuit(request.hidden_string, request.num_qubits)
         statevector, probabilities, counts = simulate_bernstein_vazirani(circuit)
-        
-        # Recover hidden string
+          # Recover hidden string
         recovered_string = recover_hidden_string(counts, request.num_qubits)
-          # Convert statevector to JSON-serializable format
+        
+        # Debug output
+        print(f"Bernstein-Vazirani Debug:")
+        print(f"  Input hidden_string: {request.hidden_string}")
+        print(f"  Measurement counts: {counts}")
+        print(f"  Recovered string: {recovered_string}")
+        
+        # Convert statevector to JSON-serializable format
         quantum_state = [ComplexNumber(real=float(amp.real), imag=float(amp.imag)) for amp in statevector]
         
         # Prepare circuit data for visualization

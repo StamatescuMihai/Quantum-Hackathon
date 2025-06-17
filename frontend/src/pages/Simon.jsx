@@ -112,7 +112,7 @@ const Simon = () => {
       if (apiResult.linear_equations) {
         setLinearEquations(apiResult.linear_equations)
       }
-      setResult(`Hidden period found: ${apiResult.discovered_period || hiddenPeriod} (Backend Result)`)
+      setResult(`Hidden period found: ${apiResult.recovered_period || hiddenPeriod} (Backend Result)`)
     } else {
       // Use local simulation results
       const equations = [
@@ -160,9 +160,13 @@ const Simon = () => {
   }
 
   const handlePeriodChange = (value) => {
-    // Validate binary string (2-bit for simplicity)
+    // Validate binary string (1-2 bits)
     if (/^[01]{0,2}$/.test(value)) {
-      setHiddenPeriod(value.padEnd(2, '0'))
+      setHiddenPeriod(value)
+      // Reset probabilities when input changes
+      if (!isRunning) {
+        setProbabilities(new Array(16).fill(0))
+      }
     }
   }
 
@@ -343,7 +347,7 @@ const Simon = () => {
                     maxLength="2"
                   />
                   <p className="text-white/60 text-xs mt-1">
-                    Enter a 2-bit binary string (00, 01, 10, 11)
+                    Enter a 2-bit binary string (01, 10, 11). Note: 00 is not a valid period.
                   </p>
                 </div>
 
@@ -371,7 +375,7 @@ const Simon = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={runAlgorithm}
-                    disabled={isRunning || !hiddenPeriod || hiddenPeriod === '00'}
+                    disabled={isRunning || !hiddenPeriod || hiddenPeriod.length === 0 || hiddenPeriod === '00'}
                     className="flex-1 quantum-button flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Play className="w-4 h-4 mr-2" />
@@ -453,7 +457,7 @@ const Simon = () => {
                       <strong className="text-orange-300">Success:</strong> {apiResult.success ? 'Yes' : 'No'}
                     </p>
                     <p className="text-white/80">
-                      <strong className="text-orange-300">Discovered Period:</strong> {apiResult.discovered_period || 'Unknown'}
+                      <strong className="text-orange-300">Discovered Period:</strong> {apiResult.recovered_period || 'Unknown'}
                     </p>
                     <p className="text-white/80">
                       <strong className="text-orange-300">Iterations:</strong> {apiResult.iterations || 'N/A'}

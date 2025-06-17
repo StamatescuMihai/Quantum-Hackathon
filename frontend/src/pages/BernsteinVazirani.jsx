@@ -42,7 +42,7 @@ const BernsteinVazirani = () => {
             // Apply backend results after animation
             if (apiResult.success && apiResult.probabilities) {
               setProbabilities(apiResult.probabilities)
-              setResult(`Hidden string found: ${apiResult.discovered_string} (Backend Result)`)
+              setResult(`Hidden string found: ${apiResult.recovered_string} (Backend Result)`)
             }
           } else if (!isUsingBackend) {
             // Local simulation result
@@ -110,7 +110,7 @@ const BernsteinVazirani = () => {
         // Update visualization with backend results
         if (data.success && data.probabilities) {
           setProbabilities(data.probabilities)
-          setResult(`Hidden string found: ${data.discovered_string} (Backend Result)`)
+          setResult(`Hidden string found: ${data.recovered_string} (Backend Result)`)
         }
         
         // Animate through steps for visualization
@@ -413,6 +413,9 @@ const BernsteinVazirani = () => {
                     </p>
                     <p className="text-white/80">
                       <strong className="text-orange-300">Hidden String:</strong> {apiResult.hidden_string || 'Unknown'}
+                    </p>
+                    <p className="text-white/80">
+                      <strong className="text-orange-300">Recovered String:</strong> {apiResult.recovered_string || 'Unknown'}
                     </p>
                     <p className="text-white/80">
                       <strong className="text-orange-300">Measurements:</strong> {apiResult.shots || 'N/A'}
