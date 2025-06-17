@@ -1,6 +1,6 @@
-# Diagramă Algoritmul Grover - Circuit Cuantic
+# Grover's Algorithm - Quantum Circuit Diagram
 
-## Circuit General (3 qubiti, căutare în 8 elemente)
+## General Circuit (3 qubits, search in 8 elements)
 
 ```
 |0⟩ ──H──────●─────H──X──●──X──H──M──
@@ -10,45 +10,45 @@
 |1⟩ ──X──H───⊕─────────────────────────
 ```
 
-### Legenda:
-- H: Poarta Hadamard
-- X: Poarta Pauli-X (NOT)
-- ●: Control qubit pentru CNOT
-- ⊕: Target qubit pentru CNOT
-- M: Măsurătoare
+### Legend:
+- H: Hadamard Gate
+- X: Pauli-X Gate (NOT)
+- ●: Control qubit for CNOT
+- ⊕: Target qubit for CNOT
+- M: Measurement
 
-## Pași Algoritm:
+## Algorithm Steps:
 
-### 1. Inițializare
+### 1. Initialization
 ```
 |000⟩ → H⊗H⊗H → |+++⟩ = (1/√8) Σ|x⟩
 ```
 
-### 2. Oracol (exemplu pentru target=5=|101⟩)
+### 2. Oracle (example for target=5=|101⟩)
 ```
-Oracolul inversează faza pentru |101⟩:
+Oracle flips phase for |101⟩:
 |101⟩ → -|101⟩
-Toate celelalte stări rămân neschimbate
+All other states remain unchanged
 ```
 
-### 3. Difuzor (Inversarea despre medie)
+### 3. Diffuser (Inversion about average)
 ```
-- Aplică H pe primii 2 qubiti
-- Aplică X pe primii 2 qubiti  
-- Aplică CZ controlat de primii 2 qubiti
-- Aplică X pe primii 2 qubiti
-- Aplică H pe primii 2 qubiti
-```
-
-### 4. Măsurătoare
-```
-După √8 ≈ 3 iterații, probabilitatea de a măsura |101⟩ → ~1
+- Apply H to first 2 qubits
+- Apply X to first 2 qubits  
+- Apply CZ controlled by first 2 qubits
+- Apply X to first 2 qubits
+- Apply H to first 2 qubits
 ```
 
-## Reprezentare Geometrică
+### 4. Measurement
+```
+After √8 ≈ 3 iterations, probability of measuring |101⟩ → ~1
+```
+
+## Geometric Representation
 
 ```
-        |ψ⟩ după difuzor
+        |ψ⟩ after diffuser
            ↗
          /   
         /    
@@ -59,24 +59,24 @@ După √8 ≈ 3 iterații, probabilitatea de a măsura |101⟩ → ~1
    /      /
   /      /
  /      /
-|s⟩ ←─/─── |ψ⟩ după oracol
+|s⟩ ←─/─── |ψ⟩ after oracle
 ```
 
-Unde:
-- |s⟩ = superpozițiafăună uniformă
-- Fiecare iterație rotește vectorul de stare către |target⟩
-- Unghiul de rotație: θ = 2·arcsin(1/√N)
+Where:
+- |s⟩ = uniform superposition
+- Each iteration rotates state vector towards |target⟩
+- Rotation angle: θ = 2·arcsin(1/√N)
 
-## Complexitate
+## Complexity
 
-- **Clasic**: O(N) - căutare liniară
-- **Grover**: O(√N) - speedup cuadrratic
-- **Optimal**: Demonstrat că √N este optim pentru căutarea necondițională
+- **Classical**: O(N) - linear search
+- **Grover**: O(√N) - quadratic speedup
+- **Optimal**: Proven that √N is optimal for unstructured search
 
-## Aplicații Practice
+## Practical Applications
 
-1. **Căutare în baze de date nesortate**
-2. **Probleme de satisfiabilitate (SAT)**
-3. **Optimizare combinatorică**
-4. **Inversarea funcțiilor hash**
-5. **Machine learning (amplificarea amplitudilor)**
+1. **Unstructured database search**
+2. **Satisfiability problems (SAT)**
+3. **Combinatorial optimization**
+4. **Hash function inversion**
+5. **Machine learning (amplitude amplification)**

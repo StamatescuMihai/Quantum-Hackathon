@@ -1,6 +1,6 @@
-# Diagramă Algoritmul Deutsch-Jozsa - Circuit Cuantic
+# Deutsch-Jozsa Algorithm - Quantum Circuit Diagram
 
-## Circuit General (n=2 qubiti input + 1 qubit auxiliar)
+## General Circuit (n=2 input qubits + 1 auxiliary qubit)
 
 ```
 |0⟩ ──H─────●─────H──M──
@@ -10,129 +10,129 @@
 |1⟩ ──H─────⊕─────────────
 ```
 
-## Variante de Oracole
+## Oracle Variants
 
-### Funcție Constantă f(x) = 0
+### Constant Function f(x) = 0
 ```
-|0⟩ ──H─────────H──M──  (măsurare → |00⟩)
+|0⟩ ──H─────────H──M──  (measurement → |00⟩)
 |0⟩ ──H─────────H──M──  
-|1⟩ ──H─────────────── (nu se modifică)
+|1⟩ ──H─────────────── (unchanged)
 ```
 
-### Funcție Constantă f(x) = 1  
+### Constant Function f(x) = 1  
 ```
-|0⟩ ──H─────────H──M──  (măsurare → |00⟩)
+|0⟩ ──H─────────H──M──  (measurement → |00⟩)
 |0⟩ ──H─────────H──M──  
-|1⟩ ──H──X──────────── (X aplicat pe auxiliar)
+|1⟩ ──H──X──────────── (X applied to auxiliary)
 ```
 
-### Funcție Balansată f(x) = x₁
+### Balanced Function f(x) = x₁
 ```
-|0⟩ ──H─────●─────H──M──  (măsurare → |10⟩ sau |01⟩)
+|0⟩ ──H─────●─────H──M──  (measurement → |10⟩ or |01⟩)
 |0⟩ ──H─────│─────H──M──  
-|1⟩ ──H─────⊕─────────── (CNOT cu control pe primul qubit)
+|1⟩ ──H─────⊕─────────── (CNOT with control on first qubit)
 ```
 
-### Funcție Balansată f(x) = x₁ ⊕ x₂
+### Balanced Function f(x) = x₁ ⊕ x₂
 ```
-|0⟩ ──H─────●─────H──M──  (măsurare → stări non-zero)
+|0⟩ ──H─────●─────H──M──  (measurement → non-zero states)
 |0⟩ ──H─────●─────H──M──  
-|1⟩ ──H─────⊕─────────── (CNOT cu control pe ambii qubiti)
+|1⟩ ──H─────⊕─────────── (CNOT with control on both qubits)
 ```
 
-## Analiza Paso cu Paso
+## Step-by-Step Analysis
 
-### Pasul 1: Starea Inițială
+### Step 1: Initial State
 ```
 |001⟩
 ```
 
-### Pasul 2: Aplicarea Hadamard
+### Step 2: Hadamard Application
 ```
 H⊗H⊗H|001⟩ = (1/2√2) Σ|x⟩ ⊗ (|0⟩-|1⟩)
              x∈{00,01,10,11}
 ```
 
-### Pasul 3: Aplicarea Oracolului
-Pentru funcție constantă (f(x)=0):
+### Step 3: Oracle Application
+For constant function (f(x)=0):
 ```
-Starea rămâne: (1/2√2) Σ|x⟩ ⊗ (|0⟩-|1⟩)
+State remains: (1/2√2) Σ|x⟩ ⊗ (|0⟩-|1⟩)
                         x
 ```
 
-Pentru funcție balansată (f(x)=x₁):
+For balanced function (f(x)=x₁):
 ```
 Phase kickback: (1/2√2) [|00⟩ + |01⟩ - |10⟩ - |11⟩] ⊗ (|0⟩-|1⟩)
 ```
 
-### Pasul 4: Hadamard Final
-Pentru constantă → măsurare |00⟩
-Pentru balansată → măsurare ≠ |00⟩
+### Step 4: Final Hadamard
+For constant → measurement |00⟩
+For balanced → measurement ≠ |00⟩
 
-## Regula de Interpretare
+## Interpretation Rule
 
 ```
 ┌─────────────────┬─────────────────┐
-│   Măsurătoare   │ Tipul Funcției  │
+│   Measurement   │ Function Type   │
 ├─────────────────┼─────────────────┤
-│      |00⟩       │   CONSTANTĂ     │
-│   Altceva       │   BALANSATĂ     │
+│      |00⟩       │   CONSTANT      │
+│   Otherwise     │   BALANCED      │
 └─────────────────┴─────────────────┘
 ```
 
-## Reprezentare Vectorială
+## Vector Representation
 
 ```
-Funcție Constantă:           Funcție Balansată:
+Constant Function:           Balanced Function:
      |00⟩                        |01⟩, |10⟩, |11⟩
       ↑                            ↗    ↑    ↖
       │                           /     │     \
       │                          /      │      \
-   Toate                       /        │       \
- amplitudile                 /          │        \
- interferează               /           │         \
-constructiv              /             │          \
- spre |00⟩              /              │           \
+     All                       /        │       \
+ amplitudes                 /          │        \
+ interfere                 /           │         \
+constructively           /             │          \
+ towards |00⟩           /              │           \
                        ↙               │            ↘
-                   Amplitudile      |00⟩          Starea
-                   se anulează     (probabilitate  finală
-                   pentru |00⟩         = 0)       distribuită
+                   Amplitudes      |00⟩          Final
+                   cancel out     (probability    state
+                   for |00⟩         = 0)       distributed
 ```
 
-## Avantajul Cuantic
+## Quantum Advantage
 
-### Complexitate Evaluări Funcție:
-- **Clasic**: 2 evaluări (cel mai rău caz)
-- **Cuantic**: 1 evaluare
-- **Pentru n qubiti**: 2ⁿ vs 1 evaluări
+### Function Evaluation Complexity:
+- **Classical**: 2 evaluations (worst case)
+- **Quantum**: 1 evaluation
+- **For n qubits**: 2ⁿ vs 1 evaluations
 
-### Extensia Deutsch-Jozsa (n qubiti):
+### Deutsch-Jozsa Extension (n qubits):
 ```
 |0⟩⊗n ──H⊗n────ORACLE────H⊗n──M⊗n──
 |1⟩   ──H──────────│─────────────────
 ```
 
-Avantaj exponențial: O(2ⁿ) → O(1)
+Exponential advantage: O(2ⁿ) → O(1)
 
-## Implementări Fizice
+## Physical Implementations
 
-### Platforme Cuantice:
-1. **IBM Quantum**: Procesoare superconductoare
-2. **Google Sycamore**: Qubiti superconductori
-3. **IonQ**: Capcane de ioni
-4. **Rigetti**: Circuite superconductoare
-5. **PennyLane**: Simulare hibridă
+### Quantum Platforms:
+1. **IBM Quantum**: Superconducting processors
+2. **Google Sycamore**: Superconducting qubits
+3. **IonQ**: Ion trap systems
+4. **Rigetti**: Superconducting circuits
+5. **PennyLane**: Hybrid simulation
 
-### Provocări Hardware:
-- **Coherența**: Menținerea stării cuantice
-- **Fidelitatea porților**: Erorile în operații
-- **Calibrarea**: Sincronizarea operațiilor
-- **Zgomotul**: Interferențe externe
+### Hardware Challenges:
+- **Coherence**: Maintaining quantum state
+- **Gate Fidelity**: Operation errors
+- **Calibration**: Operation synchronization
+- **Noise**: External interference
 
-## Aplicații și Extensii
+## Applications and Extensions
 
-1. **Testarea proprietăților funcțiilor**
-2. **Algoritmi de decizie cuantici**
-3. **Protocoale de comunicație cuantică**
-4. **Baza pentru algoritmi mai complecși**
-5. **Demonstrații de supremația cuantică**
+1. **Function property testing**
+2. **Quantum decision algorithms**
+3. **Quantum communication protocols**
+4. **Foundation for complex algorithms**
+5. **Quantum supremacy demonstrations**
