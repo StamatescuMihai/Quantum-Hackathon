@@ -108,18 +108,33 @@ const Home = () => {
             <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed">
               Discover the revolutionary algorithms that will power tomorrow's computers. 
               Learn quantum computing through interactive visualizations and hands-on experimentation.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/algorithms" className="quantum-button">
-                <BookOpen className="w-5 h-5 mr-2" />
-                Start Learning
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
-              <Link to="/simulator" className="quantum-button-secondary">
-                <Calculator className="w-5 h-5 mr-2" />
-                Try Simulator
-              </Link>
+            </p>            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/algorithms" className="quantum-button quantum-button-glow group">
+                  <BookOpen className="w-5 h-5 mr-3" />
+                  Start Learning
+                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/simulator" className="quantum-button-secondary group">
+                  <Calculator className="w-5 h-5 mr-3" />
+                  Try Simulator
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="ml-3"
+                  >
+                    <Cpu className="w-5 h-5" />
+                  </motion.div>
+                </Link>
+              </motion.div>
             </div>
           </motion.div>
         </div>
@@ -243,14 +258,26 @@ const Home = () => {
             <p className="text-xl text-white/70 mb-8">
               Join thousands of learners exploring the quantum frontier. 
               No prior quantum knowledge required!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/algorithms" className="quantum-button">
-                Start Your Journey
-              </Link>
-              <Link to="/about" className="quantum-button-secondary">
-                Learn More
-              </Link>
+            </p>            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/algorithms" className="quantum-button quantum-button-glow group">
+                  <BookOpen className="w-5 h-5 mr-3" />
+                  Start Your Journey
+                  <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link to="/about" className="quantum-button-secondary group">
+                  <Brain className="w-5 h-5 mr-3" />
+                  Learn More
+                </Link>
+              </motion.div>
             </div>
           </motion.div>
         </div>
