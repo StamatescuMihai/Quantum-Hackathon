@@ -31,4 +31,4 @@ services:
 
 networks:
   default:
-    name: quantum-explorer-network
+    name: quantum-core-network

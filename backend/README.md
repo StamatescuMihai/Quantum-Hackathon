@@ -1,85 +1,83 @@
-# Quantum Algorithm Explorer - Backend API
+# Quantum Core - Backend API
 
-FastAPI backend pentru simularea și explorarea algoritmilor cuantici.
+FastAPI backend for quantum algorithm simulation and visualization.
 
-## Funcționalități
+## Features
 
-- 🔬 **Simulare algoritmi cuantici**: Grover, Deutsch-Jozsa, Bernstein-Vazirani, Simon
-- 📊 **Export circuite**: Generare SVG și ASCII pentru vizualizare
-- 🔄 **API RESTful**: Endpoints pentru fiecare algoritm
-- 📋 **Documentație automată**: Swagger UI și ReDoc
-- 🐳 **Containerizat**: Suport Docker pentru deployment
+- **Quantum Algorithm Simulation**: Grover, Deutsch-Jozsa, Bernstein-Vazirani, Simon
+- **Circuit Export**: SVG and ASCII generation for visualization
+- **RESTful API**: Dedicated endpoints for each algorithm
+- **Auto Documentation**: Swagger UI and ReDoc
+- **Containerized**: Docker support for deployment
 
-## Structura Proiectului
+## Project Structure
 
 ```
 backend/
 ├── app/
-│   ├── algorithms/          # Implementări algoritmi cuantici
-│   │   ├── grover.py       # Algoritmul Grover
-│   │   ├── deutsch_jozsa.py # Algoritmul Deutsch-Jozsa
-│   │   ├── bernstein_vazirani.py # Algoritmul Bernstein-Vazirani
-│   │   └── simon.py        # Algoritmul Simon
-│   ├── utils/              # Utilități comune
-│   │   └── circuit_utils.py # Funcții pentru circuite
-│   └── main.py             # Aplicația FastAPI principală
-├── requirements.txt        # Dependințe Python
-├── Dockerfile             # Container Docker
-└── README.md              # Această documentație
+│   ├── algorithms/          # Quantum algorithm implementations
+│   │   ├── grover.py       # Grover's Algorithm
+│   │   ├── deutsch_jozsa.py # Deutsch-Jozsa Algorithm
+│   │   ├── bernstein_vazirani.py # Bernstein-Vazirani Algorithm
+│   │   └── simon.py        # Simon's Algorithm
+│   ├── utils/              # Common utilities
+│   │   └── circuit_utils.py # Circuit functions
+│   └── main.py             # Main FastAPI application
+├── requirements.txt        # Python dependencies
+├── Dockerfile             # Docker container
+├── venv/                  # Virtual environment
+└── README.md              # This documentation
 ```
 
-## Instalare și Pornire
+## Installation and Setup
 
-### Instalare locală
+### Local Installation
 
 ```bash
-# Clonează repository-ul
-git clone <repository-url>
-cd quantum-algorithm-explorer/backend
+cd backend
 
-# Creează environment virtual
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-# Instalează dependințele
+# Install dependencies
 pip install -r requirements.txt
 
-# Pornește serverul
+# Start server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Cu Docker
+### Docker
 
 ```bash
-# Build imagine Docker
+# Build Docker image
 docker build -t quantum-backend .
 
-# Rulează container
+# Run container
 docker run -p 8000:8000 quantum-backend
 ```
 
-### Cu Docker Compose (recomandat)
+### Docker Compose (Recommended)
 
 ```bash
-# Din directorul rădăcină al proiectului
+# From project root directory
 docker-compose up --build
 ```
 
 ## API Endpoints
 
-### Informații generale
+### General Information
 
-- **GET** `/` - Mesaj de bun venit
-- **GET** `/health` - Health check pentru monitoring
-- **GET** `/api/health` - Health check detaliat
-- **GET** `/api/algorithms` - Lista tuturor algoritmilor disponibili
-- **GET** `/api/docs` - Documentație Swagger UI
-- **GET** `/api/redoc` - Documentație ReDoc
+- **GET** `/` - Welcome message
+- **GET** `/health` - Health check for monitoring
+- **GET** `/api/health` - Detailed health check
+- **GET** `/api/docs` - Swagger UI documentation
+- **GET** `/api/redoc` - ReDoc documentation
 
-### Algoritmul Grover
+### Grover's Algorithm
 
-- **POST** `/api/algorithms/grover/simulate` - Simulare algoritm
-- **GET** `/api/algorithms/grover/info` - Informații despre algoritm
+- **POST** `/api/algorithms/grover/simulate` - Run simulation
+- **GET** `/api/algorithms/grover/info` - Algorithm information
 
 ```json
 {
@@ -89,10 +87,10 @@ docker-compose up --build
 }
 ```
 
-### Algoritmul Deutsch-Jozsa
+### Deutsch-Jozsa Algorithm
 
-- **POST** `/api/algorithms/deutsch-jozsa/simulate` - Simulare algoritm
-- **GET** `/api/algorithms/deutsch-jozsa/info` - Informații despre algoritm
+- **POST** `/api/algorithms/deutsch-jozsa/simulate` - Run simulation
+- **GET** `/api/algorithms/deutsch-jozsa/info` - Algorithm information
 
 ```json
 {
@@ -101,10 +99,10 @@ docker-compose up --build
 }
 ```
 
-### Algoritmul Bernstein-Vazirani
+### Bernstein-Vazirani Algorithm
 
-- **POST** `/api/algorithms/bernstein-vazirani/simulate` - Simulare algoritm
-- **GET** `/api/algorithms/bernstein-vazirani/info` - Informații despre algoritm
+- **POST** `/api/algorithms/bernstein-vazirani/simulate` - Run simulation
+- **GET** `/api/algorithms/bernstein-vazirani/info` - Algorithm information
 
 ```json
 {
@@ -113,10 +111,10 @@ docker-compose up --build
 }
 ```
 
-### Algoritmul Simon
+### Simon's Algorithm
 
-- **POST** `/api/algorithms/simon/simulate` - Simulare algoritm
-- **GET** `/api/algorithms/simon/info` - Informații despre algoritm
+- **POST** `/api/algorithms/simon/simulate` - Run simulation
+- **GET** `/api/algorithms/simon/info` - Algorithm information
 
 ```json
 {
@@ -125,24 +123,23 @@ docker-compose up --build
 }
 ```
 
-## Tehnologii Utilizate
+## Technologies Used
 
-- **FastAPI**: Framework web modern pentru Python
-- **Qiskit**: Framework pentru programarea cuantică
-- **Qiskit Aer**: Simulator cuantic local
-- **Pydantic**: Validare date și serializare
-- **Uvicorn**: Server ASGI pentru producție
+- **FastAPI**: Modern Python web framework
+- **Qiskit**: Quantum computing framework
+- **Qiskit Aer**: Local quantum simulator
+- **Pydantic**: Data validation and serialization
+- **Uvicorn**: ASGI server for production
 
-## Dezvoltare
+## Development
 
-### Adăugarea unui algoritm nou
+### Adding a New Algorithm
 
-1. Creează un fișier nou în `app/algorithms/`
-2. Implementează router-ul FastAPI cu endpoints specifice
-3. Adaugă router-ul în `main.py`
-4. Actualizează lista din `/api/algorithms`
+1. Create a new file in `app/algorithms/`
+2. Implement FastAPI router with specific endpoints
+3. Add router to `main.py`
 
-Exemplu structură:
+Example structure:
 
 ```python
 from fastapi import APIRouter
@@ -151,11 +148,11 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class AlgorithmRequest(BaseModel):
-    # parametri specifici
+    # specific parameters
 
 @router.post("/algorithm-name/simulate")
 async def simulate_algorithm(request: AlgorithmRequest):
-    # implementare algoritm
+    # algorithm implementation
     return {"result": "..."}
 
 @router.get("/algorithm-name/info")
@@ -166,84 +163,59 @@ async def get_algorithm_info():
 ### Testing
 
 ```bash
-# Rulează testele (dacă există)
+# Run tests
 pytest
 
-# Test manual cu curl
+# Manual testing
 curl -X GET http://localhost:8000/api/health
 ```
 
-### Code Style
+## Configuration
 
-Proiectul folosește:
-- **Black** pentru formatare
-- **Flake8** pentru linting
-- **Type hints** pentru claritate
+### Environment Variables
 
 ```bash
-# Formatare cod
-black app/
-
-# Verificare stil
-flake8 app/
-```
-
-## Configurare Mediu
-
-### Variabile de mediu
-
-```bash
-# Port server (default: 8000)
+# Server port (default: 8000)
 PORT=8000
 
-# Nivel log (default: info)
+# Log level (default: info)
 LOG_LEVEL=info
 
-# Modul dezvoltare (default: false)
+# Development mode (default: false)
 DEBUG=false
 ```
 
 ### CORS Configuration
 
-Backend-ul este configurat pentru a permite request-uri de la:
+Backend is configured to allow requests from:
 - `http://localhost:3000` (frontend development)
 - `http://127.0.0.1:3000`
 
-Pentru producție, actualizează lista în `main.py`.
+For production, update the list in `main.py`.
 
-## Monitorizare și Logging
+## Monitoring
 
 ### Health Checks
 
-- `/health` - Check simplu pentru Docker
-- `/api/health` - Check detaliat cu metadata
-
-### Logs
-
-Aplicația folosește logging standard Python. Pentru personalizare:
-
-```python
-import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-```
+- `/health` - Simple check for Docker
+- `/api/health` - Detailed check with metadata
 
 ## Deployment
 
-### Producție
+### Production
 
-1. **Actualizează CORS origins** pentru domeniul tău
-2. **Configurează variabilele de mediu**
-3. **Folosește un server reverse proxy** (nginx, traefik)
-4. **Monitorizare și alerting** pentru endpoint-urile de health
+1. **Update CORS origins** for your domain
+2. **Configure environment variables**
+3. **Use reverse proxy** (nginx, traefik)
+4. **Set up monitoring** for health endpoints
 
-### Docker în producție
+### Docker Production
 
 ```bash
-# Build optimizat pentru producție
-docker build --target production -t quantum-backend:prod .
+# Production build
+docker build -t quantum-backend:prod .
 
-# Rulează cu resurse limitate
+# Run with resource limits
 docker run -d \
   --name quantum-backend \
   --memory=512m \
@@ -252,27 +224,16 @@ docker run -d \
   quantum-backend:prod
 ```
 
-## Contribuție
+## License
 
-1. Fork repository-ul
-2. Creează o branch pentru feature (`git checkout -b feature/amazing-feature`)
-3. Commit modificările (`git commit -m 'Add amazing feature'`)
-4. Push pe branch (`git push origin feature/amazing-feature`)
-5. Deschide un Pull Request
+This project is licensed under the WTFPL - see the [LICENSE](../LICENSE) file for details.
 
-## Licență
+## Resources
 
-Acest proiect este licențiat sub licența MIT - vezi fișierul [LICENSE](../LICENSE) pentru detalii.
-
-## Suport
-
-Pentru întrebări și probleme:
-- Deschide un issue pe GitHub
-- Contactează echipa de dezvoltare
-- Consultă documentația Qiskit: https://qiskit.org/documentation/
-
-## Resurse Suplimentare
-
-- [Qiskit Textbook](https://qiskit.org/textbook/)
+- [Qiskit Documentation](https://qiskit.org/documentation/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [Docker Best Practices](https://docs.docker.com/develop/best-practices/)
+
+---
+
+**Quantum Core Backend** - FastAPI quantum simulation service

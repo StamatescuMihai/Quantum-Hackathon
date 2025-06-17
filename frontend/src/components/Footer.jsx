@@ -10,7 +10,7 @@ const Footer = () => {
           {/* About Section */}
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-lg font-semibold text-white mb-4">
-              Quantum Algorithm Explorer
+              Quantum Core
             </h3>
             <p className="text-white/70 mb-4">
               An interactive educational platform for learning quantum computing algorithms. 
@@ -75,7 +75,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center">
           <p className="text-white/60 text-sm">
-            © 2025 Quantum Algorithm Explorer. Built for educational purposes.
+            © 2025 Quantum Core. Built for educational purposes.
           </p>
         {/* Backend Status */}
           <div className="hidden md:flex items-center mr-4">

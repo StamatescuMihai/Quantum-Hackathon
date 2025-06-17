@@ -7,7 +7,7 @@ from app.algorithms.simon import router as simon_router
 import uvicorn
 
 app = FastAPI(
-    title="Quantum Algorithm Explorer API",
+    title="Quantum Core API",
     description="Backend API for quantum algorithm simulation and visualization",
     version="1.0.0",
     docs_url="/api/docs",
@@ -31,7 +31,7 @@ app.include_router(simon_router, prefix="/api/algorithms", tags=["Simon"])
 
 @app.get("/")
 async def root():
-    return {"message": "Quantum Algorithm Explorer API"}
+    return {"message": "Quantum Core API"}
 
 @app.get("/api/health")
 async def health_check():
@@ -40,8 +40,8 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat() + "Z",
-        "version": "1.0.0",
-        "message": "Quantum Algorithm Explorer API is running",
+        "version": "1.2.1",
+        "message": "Quantum Core API is running",
         "algorithms": ["grover", "deutsch-jozsa", "bernstein-vazirani", "simon"]
     }
 

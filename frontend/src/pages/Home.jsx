@@ -99,9 +99,9 @@ const Home = () => {
             </div>
             
             <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6">
-              Explore the{' '}
+              Step into the{' '}
               <span className="text-gradient bg-gradient-to-r from-quantum-300 to-quantum-500 bg-clip-text text-transparent">
-                Quantum World
+                Quantum Universe
               </span>
             </h1>
             

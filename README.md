@@ -1,101 +1,101 @@
-# Quantum Algorithm Explorer
+# Quantum Core
 
 An interactive educational platform for exploring quantum computing algorithms through visualization and hands-on experimentation.
 
 ## Project Structure
 
-This project follows a modern full-stack architecture with a React frontend and Python FastAPI backend:
-
 ```
-quantum-algorithm-explorer/
-├── frontend/                        # React + Tailwind frontend
+Quantum-Hackathon/
+├── frontend/                        # React frontend with Vite
 │   ├── public/
 │   ├── src/
-│   │   ├── components/              # Reusable UI components
+│   │   ├── components/              # UI components
 │   │   ├── pages/                   # Page components
-│   │   └── styles/                  # Global styles
+│   │   └── styles/                  # Tailwind CSS styles
 │   ├── package.json
 │   └── vite.config.js
-├── backend/                         # Python FastAPI backend
+├── backend/                         # FastAPI backend
 │   ├── app/
-│   │   ├── algorithms/              # Algorithm implementations
+│   │   ├── algorithms/              # Quantum algorithm implementations
 │   │   ├── utils/                   # Utility functions
 │   │   └── main.py                  # FastAPI application
-│   └── requirements.txt
-├── shared/                          # Documentation and resources
+│   ├── requirements.txt
+│   └── venv/                        # Python virtual environment
+├── shared/                          # Documentation and notebooks
 │   ├── notebooks/                   # Jupyter notebooks
-│   ├── diagrams/                    # Circuit diagrams
 │   └── docs/                        # Documentation
+├── start-dev.sh                     # Development startup script
+├── check-status.sh                  # Status monitoring script
+├── install.sh                       # Installation script
+├── justfile                         # Task runner
 └── docker-compose.yml               # Container orchestration
 ```
 
 ## Quick Start
 
-### Option 1: Development Setup (Recommended)
+### Development Setup (Recommended)
 
-The easiest way to get started is using the development startup script:
+Use the development startup script:
 
 ```bash
-# Navigate to the project directory
 cd Quantum-Hackathon
-
-# Start both frontend and backend servers
 ./start-dev.sh
 ```
 
 This will:
-- Set up a Python virtual environment for the backend
-- Install all dependencies for both frontend and backend
-- Start the backend server on http://localhost:8000
-- Start the frontend server on http://localhost:3000
+- Create and activate a Python virtual environment
+- Install backend dependencies
+- Install frontend dependencies  
+- Start backend server on http://localhost:8000
+- Start frontend server on http://localhost:3000
 
-### Option 2: Manual Setup
+### Manual Setup
 
-#### Backend Setup
+#### Backend
 ```bash
 cd backend
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### Frontend Setup
+#### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Option 3: Docker Setup
+### Docker Setup
 ```bash
 docker-compose up --build
 ```
 
-### Access the Application
+### Access Points
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/api/docs
 
 ## Features
 
-### 🚀 **Backend Integration**
-- Real quantum simulations using **Qiskit**
+### Backend Integration
+- Quantum simulations using **Qiskit**
 - REST API endpoints for each algorithm
-- Accurate quantum state calculations
+- Quantum state calculations
 - Measurement statistics
 
-### 🎨 **Interactive Frontend**
-- Modern React interface with smooth animations
-- Real-time visualization of quantum states
-- Toggle between backend simulation and local approximation
-- Responsive design for all devices
+### Interactive Frontend  
+- React interface with animations
+- Real-time quantum state visualization
+- Responsive design
+- Algorithm parameter controls
 
-### ⚛️ **Quantum Algorithms**
-- **Grover's Algorithm**: Search unsorted databases with quadratic speedup
-- **Deutsch-Jozsa**: Determine function properties with exponential advantage
-- **Bernstein-Vazirani**: Find hidden bit strings using quantum parallelism
-- **Simon's Algorithm**: Discover hidden periods with quantum advantage
+### Quantum Algorithms
+- **Grover's Algorithm**: Database search with quadratic speedup
+- **Deutsch-Jozsa**: Function property determination
+- **Bernstein-Vazirani**: Hidden bit string discovery
+- **Simon's Algorithm**: Hidden period finding
 
 ## Technology Stack
 
@@ -117,141 +117,116 @@ docker-compose up --build
 ### Development Tools
 - **Docker**: Containerization
 - **ESLint**: JavaScript linting
-- **Black**: Python code formatting
 - **Pytest**: Python testing
+- **Just**: Task runner
 
 ## Learning Path
 
 ### Beginners
-1. Start with **Grover's Algorithm** for an intuitive introduction
-2. Explore the **Simulator** to experiment with quantum gates
-3. Read the **About** section for context
-
-### Intermediate
-1. Dive into **Deutsch-Jozsa** for function analysis concepts
-2. Try **Bernstein-Vazirani** for linear algebra applications
-3. Experiment with custom circuits
+1. Start with **Grover's Algorithm**
+2. Explore the **Simulator**
+3. Read the documentation
 
 ### Advanced
-1. Master **Simon's Algorithm** for period finding
-2. Explore the underlying mathematics
-3. Contribute to the open-source project
+1. Study **Simon's Algorithm**
+2. Explore circuit implementations
+3. Experiment with parameters
 
 ## API Documentation
 
-The backend provides RESTful APIs for quantum algorithm simulation:
-
 ### Endpoints
 
-- `GET /api/algorithms` - List all algorithms
-- `POST /api/algorithms/grover/run` - Run Grover's algorithm
-- `POST /api/algorithms/deutsch-jozsa/run` - Run Deutsch-Jozsa
-- `POST /api/algorithms/bernstein-vazirani/run` - Run Bernstein-Vazirani
-- `POST /api/algorithms/simon/run` - Run Simon's algorithm
+- `GET /api/health` - Health check
+- `GET /api/algorithms/grover/info` - Get Grover algorithm info
+- `POST /api/algorithms/grover/simulate` - Run Grover simulation
+- `GET /api/algorithms/deutsch-jozsa/info` - Get Deutsch-Jozsa info
+- `POST /api/algorithms/deutsch-jozsa/simulate` - Run Deutsch-Jozsa simulation
+- `GET /api/algorithms/bernstein-vazirani/info` - Get Bernstein-Vazirani info
+- `POST /api/algorithms/bernstein-vazirani/simulate` - Run Bernstein-Vazirani simulation
+- `GET /api/algorithms/simon/info` - Get Simon algorithm info
+- `POST /api/algorithms/simon/simulate` - Run Simon simulation
 
 ### Example Request
 ```json
 {
-  "target_item": 3,
-  "iterations": 2,
-  "num_qubits": 3
+  "target": 2,
+  "database_size": 4,
+  "iterations": 1
 }
 ```
 
 ### Example Response
 ```json
 {
-  "success": true,
-  "circuit_data": { ... },
-  "quantum_state": [ ... ],
-  "probabilities": [ ... ],
-  "measurement_counts": { ... }
+  "result": "Target found",
+  "counts": {"10": 1024},
+  "circuit_ascii": "...",
+  "execution_time": 0.123
 }
 ```
 
 ## Educational Content
 
-### Quantum Concepts Covered
+### Quantum Concepts
 - Quantum superposition and entanglement
 - Quantum gates and circuits
 - Amplitude amplification
 - Quantum interference
 - Measurement and probability
 
-### Mathematical Prerequisites
-- Linear algebra (vectors, matrices)
-- Complex numbers
-- Basic probability theory
-- Boolean algebra
+## Development
 
-## Contributing
-
-We welcome contributions from the quantum computing community!
-
-### Development Setup
+### Setup
 1. Fork the repository
-2. Create a feature branch
-3. Install dependencies: `just install`
-4. Make your changes
-5. Test your changes: `just run-all`
-6. Add tests and documentation
-7. Submit a pull request
-
-### Code Style
-- Frontend: ESLint + Prettier
-- Backend: Black + Flake8
-- Documentation: Markdown
+2. Run `./install.sh` to set up dependencies
+3. Use `./start-dev.sh` for development
+4. Check status with `./check-status.sh`
 
 ### Testing
 ```bash
-# Frontend
-npm test
-
 # Backend
-pytest
+cd backend && pytest
+
+# Frontend  
+cd frontend && npm test
+```
+
+### Task Runner
+```bash
+# Using justfile
+just install    # Install dependencies
+just dev        # Start development servers
+just test       # Run tests
 ```
 
 ## Deployment
 
-### Local Development
+### Development
 ```bash
-just install
-just run-all
+./start-dev.sh
 ```
 
-### Production Build
+### Production
 ```bash
-# Frontend
+# Frontend build
 cd frontend && npm run build
 
-# Backend
-cd backend && pip install -r requirements.txt
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
+# Backend production
+cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
 
-### Docker Production
-```bash
-docker-compose -f docker-compose.prod.yml up --build
+# Docker
+docker-compose up --build
 ```
 
 ## License
 
-This project is licensed under the WTFPL (Do What The Fuck You Want To Public License) - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the WTFPL - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
 - **Qiskit Team** for the quantum computing framework
 - **Quantum Computing Community** for inspiration and feedback
-- **Educational Institutions** supporting quantum education
-
-## Roadmap
-
-### Coming Soon
-- [ ] Shor's Algorithm implementation
-- [ ] Quantum Fourier Transform module
-- [ ] Advanced circuit builder
-- [ ] Quantum machine learning algorithms
 
 ---
 
-Made with ❤️ for quantum education
+**Quantum Core** - Educational quantum computing platform
