@@ -111,12 +111,6 @@ out/
 instance/
 .webassets-cache
 
-# Quantum circuit images
-*.png
-*.jpg
-*.svg
-circuit_*.pdf
-
 # Development files
 scratch/
 test_files/
