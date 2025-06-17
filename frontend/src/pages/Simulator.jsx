@@ -1,19 +1,71 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calculator, Cpu, Zap, RotateCcw, Play, Settings, Trash2 } from 'lucide-react'
+import { Calculator, Cpu, Zap, RotateCcw, Play, Settings, Trash2, AlertCircle } from 'lucide-react'
 import CircuitVisualizer from '../components/CircuitVisualizer'
+import { runQuantumSimulation, runCustomCircuit, getAvailableGates, getSimulatorInfo } from '../services/api'
 
-const Simulator = () => {
-  // Scroll to top when component mounts
+const Simulator = () => {  // Scroll to top when component mounts and load backend data
   useEffect(() => {
     window.scrollTo(0, 0)
+    loadBackendData()
   }, [])
+  const loadBackendData = async () => {
+    try {
+      const [gatesData, infoData] = await Promise.all([
+        getAvailableGates(),
+        getSimulatorInfo()
+      ])
+      
+      // Flatten the gates structure from backend
+      const allGates = [
+        ...(gatesData.single_qubit_gates || []),
+        ...(gatesData.two_qubit_gates || [])
+      ]
+      setAvailableGates(allGates)
+      setSimulatorInfo(infoData)
+      setError('')
+    } catch (err) {
+      console.error('Failed to load backend data:', err)
+      setError('Failed to connect to quantum simulator backend')
+    }
+  }
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('grover')
   const [qubits, setQubits] = useState(3)
   const [isRunning, setIsRunning] = useState(false)
   const [customCircuit, setCustomCircuit] = useState(false)
   const [circuitGates, setCircuitGates] = useState([])
   const [draggedGate, setDraggedGate] = useState(null)
+  const [simulationResult, setSimulationResult] = useState(null)
+  const [error, setError] = useState('')
+  const [availableGates, setAvailableGates] = useState([])
+  const [simulatorInfo, setSimulatorInfo] = useState(null)
+  // Handle qubit count changes and clean up invalid gates
+  const handleQubitChange = (newQubitCount) => {
+    const oldQubitCount = qubits
+    setQubits(newQubitCount)
+    
+    // Remove gates that are on qubits that no longer exist
+    const validGates = circuitGates.filter(gate => {
+      // Check if the gate's qubit is still valid
+      const isQubitValid = gate.qubit < newQubitCount
+      
+      // For two-qubit gates like CNOT, also check target qubit
+      let isTargetValid = true
+      if (gate.target_qubit !== undefined && gate.target_qubit !== null) {
+        isTargetValid = gate.target_qubit < newQubitCount
+      }
+      
+      return isQubitValid && isTargetValid
+    })
+    
+    // Update circuit gates if any were removed
+    if (validGates.length !== circuitGates.length) {
+      const removedCount = circuitGates.length - validGates.length
+      setCircuitGates(validGates)
+      // Clear simulation results since circuit changed
+      setSimulationResult(null)
+    }
+  }
 
   const algorithms = {
     'grover': {
@@ -41,8 +93,7 @@ const Simulator = () => {
       color: "from-red-500 to-pink-600"
     }
   }
-
-  const quantumGates = [
+  const quantumGates = availableGates.length > 0 ? availableGates : [
     { name: 'H', description: 'Hadamard Gate', symbol: 'H' },
     { name: 'X', description: 'Pauli-X (NOT)', symbol: 'X' },
     { name: 'Y', description: 'Pauli-Y', symbol: 'Y' },
@@ -52,16 +103,70 @@ const Simulator = () => {
     { name: 'S', description: 'S Gate', symbol: 'S' },
     { name: 'RZ', description: 'Z-Rotation', symbol: 'RZ' },
   ]
-
-  const runSimulation = () => {
+  const runSimulation = async () => {
     setIsRunning(true)
-    setTimeout(() => {
-      setIsRunning(false)
-    }, 3000)
-  }
+    setError('')
+    
+    try {
+      if (!simulatorInfo) {
+        throw new Error('Backend not connected. Please ensure the quantum simulator backend is running.')
+      }
 
+      let result
+        if (customCircuit) {
+        // Allow empty circuits to show initial quantum state
+        const formattedGates = circuitGates.map(gate => {
+          const baseGate = {
+            name: gate.name,
+            qubit: gate.qubit,
+            timeStep: gate.timeStep,
+            description: gate.description,
+            symbol: gate.symbol
+          }
+          
+          // Handle two-qubit gates like CNOT
+          if (gate.name === 'CNOT') {
+            // For CNOT, we need to specify a target qubit
+            // Default to next qubit if not specified
+            baseGate.target_qubit = gate.target_qubit || ((gate.qubit + 1) % qubits)
+          }
+          
+          // Handle parameterized gates
+          if (gate.parameter !== undefined) {
+            baseGate.parameter = gate.parameter
+          }
+          
+          return baseGate
+        })
+        
+        console.log('Sending custom circuit to backend:', formattedGates)
+        result = await runCustomCircuit(qubits, formattedGates, 1024)
+      } else {
+        // Run predefined algorithm
+        console.log('Sending predefined algorithm to backend:', selectedAlgorithm)
+        result = await runQuantumSimulation(qubits, [], selectedAlgorithm, 1024)
+      }
+      
+      console.log('Backend response:', result)
+      
+      if (!result.success) {
+        throw new Error(result.error_message || 'Simulation failed')
+      }
+      
+      setSimulationResult(result)
+      setError('')
+    } catch (err) {
+      console.error('Simulation failed:', err)
+      setError(`Simulation failed: ${err.response?.data?.detail || err.message}`)
+      setSimulationResult(null)
+    } finally {
+      setIsRunning(false)
+    }
+  }
   const resetSimulation = () => {
     setIsRunning(false)
+    setSimulationResult(null)
+    setError('')
   }
 
   // Drag and Drop handlers
@@ -74,7 +179,6 @@ const Simulator = () => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'copy'
   }
-
   const handleDrop = (e, qubitIndex, timeStep) => {
     e.preventDefault()
     if (draggedGate) {
@@ -84,6 +188,21 @@ const Simulator = () => {
         timeStep: timeStep,
         id: Date.now() + Math.random() // Unique ID for each gate
       }
+      
+      // For CNOT gates, automatically assign a valid target qubit
+      if (draggedGate.name === 'CNOT') {
+        // Find a valid target qubit (different from control qubit)
+        let targetQubit = (qubitIndex + 1) % qubits
+        if (targetQubit === qubitIndex) {
+          targetQubit = (qubitIndex + 1) % qubits
+        }
+        // If only 2 qubits and we're on qubit 1, target should be qubit 0
+        if (qubits === 2 && qubitIndex === 1) {
+          targetQubit = 0
+        }
+        newGate.target_qubit = targetQubit
+      }
+      
       setCircuitGates(prev => [...prev, newGate])
       setDraggedGate(null)
     }
@@ -92,9 +211,10 @@ const Simulator = () => {
   const removeGate = (gateId) => {
     setCircuitGates(prev => prev.filter(gate => gate.id !== gateId))
   }
-
   const clearCircuit = () => {
     setCircuitGates([])
+    setSimulationResult(null)
+    setError('')
   }
 
   return (
@@ -114,15 +234,16 @@ const Simulator = () => {
             
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
               Quantum Circuit Simulator
-            </h1>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto">
+            </h1>            <p className="text-xl text-white/80 max-w-3xl mx-auto">
               Experiment with quantum algorithms and build custom circuits. 
               Visualize quantum states and observe quantum mechanical phenomena in real-time.
             </p>
-            <p className="text-4xl sm:text-xl font-bold text-white mb-4">
-              Still a Work in Progress!
-              Lack of BackEnd may cause innacurate results.
-            </p>
+            {error && (
+              <div className="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-400" />
+                <p className="text-red-200 text-sm">{error}</p>
+              </div>
+            )}
           </motion.div>
         {/* Simulator Features */}
         <motion.section
@@ -229,13 +350,12 @@ const Simulator = () => {
                   <div>
                     <label className="block text-sm font-medium text-white/90 mb-2">
                       Number of Qubits: {qubits}
-                    </label>
-                    <input
+                    </label>                    <input
                       type="range"
                       min="2"
                       max="6"
                       value={qubits}
-                      onChange={(e) => setQubits(parseInt(e.target.value))}
+                      onChange={(e) => handleQubitChange(parseInt(e.target.value))}
                       className="w-full"
                       disabled={!customCircuit}
                     />
@@ -268,9 +388,7 @@ const Simulator = () => {
                         {algorithms[selectedAlgorithm].complexity}
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex gap-4 mt-6">
+                  </div>                  <div className="flex gap-4 mt-6">
                     <button
                       onClick={runSimulation}
                       disabled={isRunning}
@@ -286,6 +404,40 @@ const Simulator = () => {
                       <RotateCcw className="w-4 h-4" />
                     </button>
                   </div>
+                  
+                  {/* Simulation Status */}
+                  {(isRunning || simulationResult || error) && (
+                    <div className="mt-4 p-4 rounded-lg border border-white/20">
+                      {isRunning && (
+                        <div className="flex items-center space-x-2 text-blue-400">
+                          <div className="animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
+                          <span>Running quantum simulation...</span>
+                        </div>
+                      )}
+                      
+                      {!isRunning && simulationResult && (
+                        <div className="text-green-400">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <span>Simulation completed successfully</span>
+                          </div>
+                          <div className="text-sm text-white/70">
+                            {customCircuit ? 'Custom circuit' : `Algorithm: ${selectedAlgorithm}`} • 
+                            {qubits} qubits • {simulationResult.gate_count || 0} gates
+                          </div>
+                        </div>
+                      )}
+                      
+                      {!isRunning && error && (
+                        <div className="text-red-400 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <AlertCircle className="w-4 h-4" />
+                            <span>Simulation failed</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -366,19 +518,21 @@ const Simulator = () => {
                       </React.Fragment>
                     ))}
                   </div>
-                </div>
-                
-                {/* Circuit Stats */}
+                </div>                  {/* Circuit Stats */}
                 <div className="mt-4 flex justify-between items-center text-sm">
                   <span className="text-white/60">
-                    Gates placed: {circuitGates.length} | Qubits: {qubits} | Depth: {Math.max(...circuitGates.map(g => g.timeStep + 1), 0)}
+                    Gates placed: {circuitGates.length} | Qubits: {qubits} | Max Depth: {circuitGates.length > 0 ? Math.max(...circuitGates.map(g => g.timeStep + 1)) : 0}
+                    {circuitGates.length === 0 && " (Initial state)"}
                   </span>
-                  <button
-                    onClick={() => console.log('Circuit gates:', circuitGates)} /* Add functionality */
-                    className="text-quantum-400 hover:text-quantum-300 transition-colors"
-                  >
-                    View Circuit Data
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={runSimulation}
+                      disabled={isRunning}
+                      className="text-green-400 hover:text-green-300 transition-colors text-xs disabled:opacity-50"
+                    >
+                      {isRunning ? 'Running...' : (circuitGates.length === 0 ? 'Show Initial State' : 'Quick Simulate')}
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -426,74 +580,119 @@ const Simulator = () => {
                     <div className="text-xs text-white/70">{gate.description}</div>
                   </motion.div>
                 ))}
-              </div>
-              <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+              </div>              <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
                 <p className="text-blue-200 text-sm">
                   💡 <strong>How to use:</strong> Drag gates from the library above and drop them on the circuit visualization above. Gates placed: {circuitGates.length}
+                  {circuitGates.length === 0 && " (Empty circuit will show the initial |00...0⟩ state)"}
                 </p>
               </div>
             </div>
           </motion.section>
-        )}
-
-        {/* Quantum State Display */}
+        )}        {/* Quantum State Display */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-        >
-          {/* State Vector */}
+        >          {/* State Vector */}
           <div className="quantum-card">
             <h3 className="text-xl font-semibold text-white mb-4">Quantum State Vector</h3>
-            <div className="mt-4 space-y-2">
-              {Array.from({length: Math.pow(2, qubits)}, (_, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-white/70">
-                    |{i.toString(2).padStart(qubits, '0')}⟩
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 h-2 bg-white/10 rounded-full">
-                      <div 
-                        className="h-full bg-quantum-400 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.random() * 100}%` }}
-                      />
+            {!simulationResult ? (
+              <div className="text-center py-8">
+                <p className="text-white/60">Run a simulation to see quantum state vector</p>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-2">                {Array.from({length: Math.pow(2, qubits)}, (_, i) => {
+                  const binaryState = i.toString(2).padStart(qubits, '0')
+                  let amplitude = 0
+                  let probability = 0
+                  
+                  if (simulationResult.quantum_state && simulationResult.quantum_state[i]) {
+                    const state = simulationResult.quantum_state[i]
+                    amplitude = Math.sqrt(state.real * state.real + state.imag * state.imag)
+                    probability = amplitude * amplitude
+                  }
+                  
+                  return (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-white/70">
+                        |{binaryState}⟩
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-24 h-2 bg-white/10 rounded-full">
+                          <div 
+                            className="h-full bg-quantum-400 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(probability * 100, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-white/60 w-12 text-right">
+                          {amplitude.toFixed(3)}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-white/60 w-12 text-right">
-                      {(Math.random()).toFixed(3)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Measurement Outcomes */}
+                  )
+                })}
+              </div>
+            )}
+          </div>          {/* Measurement Outcomes */}
           <div className="quantum-card">
             <h3 className="text-xl font-semibold text-white mb-4">Measurement Probabilities</h3>
-            <div className="space-y-3">
-              {Array.from({length: Math.pow(2, qubits)}, (_, i) => {
-                const prob = Math.random()
-                return (
-                  <div key={i} className="flex items-center justify-between">
-                    <span className="text-white font-mono">
-                      |{i.toString(2).padStart(qubits, '0')}⟩
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-32 h-3 bg-white/10 rounded-full">
-                        <div 
-                          className="h-full bg-gradient-to-r from-quantum-400 to-quantum-600 rounded-full transition-all duration-500"
-                          style={{ width: `${prob * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-white/80 text-sm w-12">
-                        {(prob * 100).toFixed(1)}%
+            {!simulationResult ? (
+              <div className="text-center py-8">
+                <p className="text-white/60">Run a simulation to see measurement probabilities</p>
+              </div>
+            ) : (
+              <div className="space-y-3">                {Array.from({length: Math.pow(2, qubits)}, (_, i) => {
+                  const binaryState = i.toString(2).padStart(qubits, '0')
+                  let probability = 0
+                  let count = 0
+                  
+                  if (simulationResult.probabilities && simulationResult.probabilities[i] !== undefined) {
+                    probability = simulationResult.probabilities[i]
+                  }
+                  if (simulationResult.measurement_counts && simulationResult.measurement_counts[binaryState]) {
+                    count = simulationResult.measurement_counts[binaryState]
+                  }
+                  
+                  return (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-white font-mono">
+                        |{binaryState}⟩
                       </span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 h-3 bg-white/10 rounded-full">
+                          <div 
+                            className="h-full bg-gradient-to-r from-quantum-400 to-quantum-600 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(probability * 100, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-white/80 text-sm w-16 text-right">
+                          {(probability * 100).toFixed(1)}%
+                          {count > 0 && (
+                            <div className="text-xs text-white/60">({count})</div>
+                          )}
+                        </span>
+                      </div>
                     </div>
+                  )
+                })}
+              </div>
+            )}
+            
+            {simulationResult && (
+              <div className="mt-4 pt-4 border-t border-white/20">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-white/60">Circuit Depth:</span>
+                    <span className="text-white ml-2">{simulationResult.circuit_depth || 0}</span>
                   </div>
-                )
-              })}
-            </div>
+                  <div>
+                    <span className="text-white/60">Gate Count:</span>
+                    <span className="text-white ml-2">{simulationResult.gate_count || 0}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </motion.section>
   </div>
