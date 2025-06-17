@@ -119,13 +119,54 @@ const Simulator = () => {
             Experiment with quantum algorithms and build custom circuits. 
             Visualize quantum states and observe quantum mechanical phenomena in real-time.
           </p>
-        </motion.div>
-
-        {/* Simulator Controls */}
+        </motion.div>        {/* Simulator Features */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="mt-12 mb-12"
+        >
+          <div className="quantum-card">
+            <h2 className="text-2xl font-bold text-white mb-6">Simulator Features</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Real-time Visualization</h3>
+                <p className="text-white/70 text-sm">
+                  Watch quantum states evolve in real-time as gates are applied
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Calculator className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Precise Calculations</h3>
+                <p className="text-white/70 text-sm">
+                  Accurate quantum state simulation with complex amplitude tracking
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Cpu className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Educational Tools</h3>
+                <p className="text-white/70 text-sm">
+                  Step-by-step execution with detailed explanations
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+    
+        {/* Simulator Controls */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
           className="mb-12"
         >
           <div className="quantum-card">
@@ -400,9 +441,6 @@ const Simulator = () => {
           {/* State Vector */}
           <div className="quantum-card">
             <h3 className="text-xl font-semibold text-white mb-4">Quantum State Vector</h3>
-            <div className="quantum-state">
-              |ψ⟩ = α₀|000⟩ + α₁|001⟩ + α₂|010⟩ + α₃|011⟩ + α₄|100⟩ + α₅|101⟩ + α₆|110⟩ + α₇|111⟩
-            </div>
             <div className="mt-4 space-y-2">
               {Array.from({length: Math.pow(2, qubits)}, (_, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
@@ -453,51 +491,8 @@ const Simulator = () => {
             </div>
           </div>
         </motion.section>
-
-        {/* Simulator Features */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-12"
-        >
-          <div className="quantum-card">
-            <h2 className="text-2xl font-bold text-white mb-6">Simulator Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Real-time Visualization</h3>
-                <p className="text-white/70 text-sm">
-                  Watch quantum states evolve in real-time as gates are applied
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Calculator className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Precise Calculations</h3>
-                <p className="text-white/70 text-sm">
-                  Accurate quantum state simulation with complex amplitude tracking
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Cpu className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Educational Tools</h3>
-                <p className="text-white/70 text-sm">
-                  Step-by-step execution with detailed explanations
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.section>
-      </div>
-    </div>
+  </div>
+</div>
   )
 }
 

@@ -23,13 +23,6 @@ const Footer = () => {
               >
                 <Github className="w-6 h-6" />
               </a>
-              <a
-                href="algorithms"
-                className="text-white/60 hover:text-white transition-colors"
-                aria-label="Documentation"
-              >
-                <BookOpen className="w-6 h-6" />
-              </a>
             </div>
           </div>
 
@@ -65,23 +58,13 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-4">Resources</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-white/60 hover:text-white transition-colors">
+                <a href="https://github.com/StamatescuMihai/Quantum-Hackathon/tree/main/shared/docs" className="text-white/60 hover:text-white transition-colors">
                   Documentation
                 </a>
               </li>
               <li>
-                <a href="#" className="text-white/60 hover:text-white transition-colors">
+                <a href="https://github.com/StamatescuMihai/Quantum-Hackathon/tree/main/shared/notebooks" className="text-white/60 hover:text-white transition-colors">
                   Jupyter Notebooks
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/60 hover:text-white transition-colors">
-                  Research Papers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/60 hover:text-white transition-colors">
-                  Community
                 </a>
               </li>
             </ul>
