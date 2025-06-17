@@ -182,21 +182,13 @@ docker-compose up --build
 3. Use `./start-dev.sh` for development
 4. Check status with `./check-status.sh`
 
-### Testing
-```bash
-# Backend
-cd backend && pytest
-
-# Frontend  
-cd frontend && npm test
-```
-
 ### Task Runner
 ```bash
 # Using justfile
 just install    # Install dependencies
-just dev        # Start development servers
-just test       # Run tests
+just run-all    # Run both backend and frontend
+just run-backend  # Run backend server
+just run-frontend  # Run frontend server
 ```
 
 ## Deployment
