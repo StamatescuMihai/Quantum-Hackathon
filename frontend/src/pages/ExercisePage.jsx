@@ -78,16 +78,36 @@ const ExercisePage = () => {
     }
     
     const selectedGateInfo = availableGates.find(g => g.name === selectedGate);
+    
+    // For CNOT gates, automatically assign a valid target qubit if not provided
+    let finalTargetQubit = targetQubit;
+    if (selectedGate === 'CNOT' && (targetQubit === null || targetQubit === undefined)) {
+      // Check if we have enough qubits for CNOT
+      if (!exercise || exercise.num_qubits < 2) {
+        console.error('ERROR: CNOT gate requires at least 2 qubits')
+        alert('CNOT gate requires at least 2 qubits')
+        return
+      }
+      
+      // Find a valid target qubit (different from control qubit)
+      finalTargetQubit = (qubit + 1) % exercise.num_qubits
+      // Make sure the target is different from control
+      if (finalTargetQubit === qubit) {
+        finalTargetQubit = 0 // If we're on the last qubit, target the first qubit
+      }
+    }
+    
     const newGate = {
       name: selectedGate,
       qubit: qubit,
       timeStep: timeStep,
-      target_qubit: targetQubit,
+      target_qubit: finalTargetQubit,
       description: selectedGateInfo?.description,
       symbol: selectedGateInfo?.symbol,
       parameter: selectedGateInfo?.hasParameter ? gateParameter : undefined
     };
     
+    console.log('Adding gate:', newGate);
     setGates([...gates, newGate]);
     if (step === undefined) {
       setCurrentStep(currentStep + 1);
@@ -210,9 +230,15 @@ const ExercisePage = () => {
                             const gateIndex = gates.findIndex(g => g === gateAtPosition);
                             removeGate(gateIndex);
                           }}
-                          title={gateAtPosition.parameter ? `${gateAtPosition.name}(${gateAtPosition.parameter.toFixed(2)})` : gateAtPosition.description}
+                          title={
+                            gateAtPosition.name === 'CNOT' 
+                              ? `CNOT: Control q${gateAtPosition.qubit} → Target q${gateAtPosition.target_qubit}`
+                              : gateAtPosition.parameter 
+                                ? `${gateAtPosition.name}(${gateAtPosition.parameter.toFixed(2)})` 
+                                : gateAtPosition.description
+                          }
                         >
-                          {gateAtPosition.symbol}
+                          {gateAtPosition.name === 'CNOT' ? '●' : gateAtPosition.symbol}
                           {gateAtPosition.parameter && (
                             <div className="text-xs text-white/80">
                               {gateAtPosition.parameter.toFixed(2)}
@@ -220,6 +246,17 @@ const ExercisePage = () => {
                           )}
                         </div>
                       )}
+                      
+                      {/* CNOT target symbol */}
+                      {gates.some(g => g.name === 'CNOT' && g.target_qubit === qubit && g.timeStep === step) && (
+                        <div
+                          className="bg-quantum-500 text-white px-2 py-1 rounded text-sm font-semibold border-2 border-white"
+                          title={`CNOT Target (controlled by q${gates.find(g => g.name === 'CNOT' && g.target_qubit === qubit && g.timeStep === step)?.qubit})`}
+                        >
+                          ⊕
+                        </div>
+                      )}
+                      
                       {/* CNOT connections */}
                       {gateAtPosition && gateAtPosition.name === 'CNOT' && gateAtPosition.target_qubit !== null && (
                         <div
