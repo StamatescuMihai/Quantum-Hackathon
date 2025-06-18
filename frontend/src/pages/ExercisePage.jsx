@@ -442,13 +442,6 @@ const ExercisePage = () => {
             Clear Circuit
           </button>
         </div>
-        
-        {/* Debug Info */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-2 p-2 bg-black/20 rounded text-xs backdrop-blur-sm">
-            <p className="text-white/70">Debug: Gates: {gates.length}, Exercise ID: {exerciseId}, Can Submit: {gates.length > 0 && !isSubmitting}</p>
-          </div>
-        )}
       </div>
     );
   };
