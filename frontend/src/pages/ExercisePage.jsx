@@ -3,6 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchExercise, submitExercise, runSimulator } from '../services/api';
 
 const ExercisePage = () => {
+  useEffect(() => {
+      window.scrollTo(0, 0)
+    }, []);
   const { exerciseId } = useParams();
   const [exercise, setExercise] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -291,9 +294,6 @@ const ExercisePage = () => {
                   </button>
                 </div>
               </div>
-              <p className="text-xs text-white/60 mt-1">
-                For exercise 3: Use RY(π/3) for 75% |0⟩ and 25% |1⟩ probabilities
-              </p>
             </div>
           )}
           

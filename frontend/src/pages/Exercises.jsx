@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchExercises } from '../services/api';
+import { Target } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Exercises = () => {
   const [exercises, setExercises] = useState([]);
@@ -66,18 +68,28 @@ const Exercises = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Quantum Circuit Exercises
-          </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto">
-            Practice building quantum circuits to achieve specific quantum states and measurement outcomes.
-            Each exercise provides hands-on experience with quantum gates and quantum mechanics principles.
-          </p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+        <div className="text-center mb-16">
+          <div className="flex justify-center mb-6">
+              <div className="p-3 bg-gradient-to-br from-quantum-400 to-quantum-600 rounded-2xl">
+                <Target className="w-12 h-12 text-white" />
+              </div>
+          </div>
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              Quantum Circuit Exercises
+            </h1>
+            <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+              Practice building quantum circuits to achieve specific quantum states and measurement outcomes.
+            </p>
+          </div>
+        </motion.div>
 
         {/* Exercise Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -42,8 +42,8 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/algorithms/shor" className="text-white/60 hover:text-white transition-colors">
-                  Shor's Algorithm
+                <a href="Exercises" className="text-white/60 hover:text-white transition-colors">
+                  Circuit Exercises
                 </a>
               </li>
               <li>
