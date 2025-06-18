@@ -9,6 +9,7 @@ import Grover from './pages/Grover'
 import DeutschJozsa from './pages/DeutschJozsa'
 import BernsteinVazirani from './pages/BernsteinVazirani'
 import Simon from './pages/Simon'
+import Shor from './pages/Shor'
 import Simulator from './pages/Simulator'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/algorithms/deutsch-jozsa" element={<DeutschJozsa />} />
             <Route path="/algorithms/bernstein-vazirani" element={<BernsteinVazirani />} />
             <Route path="/algorithms/simon" element={<Simon />} />
+            <Route path="/algorithms/shor" element={<Shor />} />
             <Route path="/simulator" element={<Simulator />} />
           </Routes>
         </main>

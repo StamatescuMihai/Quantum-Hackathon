@@ -93,6 +93,25 @@ export const runSimonAlgorithm = async (hiddenPeriod, numQubits = 4) => {
 };
 
 /**
+ * Run Shor's Algorithm
+ * @param {number} N - Number to factor
+ * @param {number} numQubits - Number of qubits to use
+ * @returns {Promise} Response from the backend
+ */
+export const runShorAlgorithm = async (N, numQubits = 4) => {
+  try {
+    const response = await api.post('/api/algorithms/shor/run', {
+      N: N,
+      num_qubits: numQubits
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error running Shor algorithm:', error);
+    throw error;
+  }
+};
+
+/**
  * Health check for the backend API
  * @returns {Promise} Health status from the backend
  */

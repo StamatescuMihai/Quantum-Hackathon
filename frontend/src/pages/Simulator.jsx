@@ -91,6 +91,12 @@ const Simulator = () => {  // Scroll to top when component mounts and load backe
       description: "Period finding with exponential advantage",
       complexity: "O(n)",
       color: "from-red-500 to-pink-600"
+    },
+    'shor': {
+      name: "Shor's Algorithm",
+      description: "Quantum integer factorization (breaks RSA)",
+      complexity: "O((log N)^3)",
+      color: "from-orange-500 to-yellow-600"
     }
   }
   const quantumGates = availableGates.length > 0 ? availableGates : [

@@ -34,4 +34,13 @@ else
     echo "Grover algorithm failed"
 fi
 
+echo "Shor Algorithm Test:"
+if curl -s -X POST "http://localhost:8000/api/algorithms/shor/run" \
+    -H "Content-Type: application/json" \
+    -d '{"N": 15, "num_qubits": 4}' | jq -e '.success' > /dev/null 2>&1; then
+    echo "Shor algorithm is working"
+else
+    echo "Shor algorithm failed"
+fi
+
 echo "Status check complete!"
