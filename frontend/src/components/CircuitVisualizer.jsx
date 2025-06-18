@@ -93,28 +93,28 @@ const CircuitVisualizer = ({
     }
 
     // Draw gates based on algorithm
-    drawAlgorithmGates(ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep)
+    drawAlgorithmGates(ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep, dimensions)
   }
 
-const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep) => {
+const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep, dimensions) => {
   const gateWidth = 50
   const gateHeight = 35
 
   switch (algorithm) {
     case 'grover':
-      drawGroverGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      drawGroverGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions)
       break
     case 'deutsch-jozsa':
-      drawDeutschJozsaGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      drawDeutschJozsaGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions)
       break
     case 'bernstein-vazirani':
-      drawBernsteinVaziraniGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      drawBernsteinVaziraniGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions)
       break
     case 'simon':
-      drawSimonGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      drawSimonGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions)
       break
     case 'shor':
-      drawShorGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      drawShorGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions)
       break
   }
 }
@@ -168,41 +168,42 @@ const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWi
     ctx.stroke()
   }
 
-  const drawGroverGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep) => {
+  const drawGroverGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions) => {
     // Clear spacing for clean visualization
     const gateSpacing = 70 // Increased spacing between gate groups
     
-    // Step 1: Initial Hadamard gates (superposition) 
+    // Step 1: Initial Hadamard gates (superposition) - always visible
     const hadamardX = margin + stepWidth
     for (let i = 0; i < qubits; i++) {
       const y = margin + i * qubitSpacing
-      drawGate(ctx, hadamardX, y, gateWidth, gateHeight, 'H', '#805ad5', true)
+      drawGate(ctx, hadamardX, y, gateWidth, gateHeight, 'H', '#805ad5', currentStep >= 0)
     }
 
-    // Step 2: Oracle implementation 
+    // Step 2: Oracle implementation - always visible but highlighted when active
     const oracleStartX = margin + 2 * stepWidth
+    const isOracleActive = currentStep >= 1
     
     // Oracle label
-    ctx.fillStyle = currentStep >= 2 ? '#e53e3e' : '#e53e3e80'
-    ctx.font = '14px Arial'
+    ctx.fillStyle = isOracleActive ? '#e53e3e' : '#e53e3e80'
+    ctx.font = isOracleActive ? 'bold 14px Arial' : '14px Arial'
     ctx.fillText('Oracle', oracleStartX + gateSpacing, margin - 30)
     
     // X gate before oracle (flip qubit 1 for target |101⟩)
-    drawGate(ctx, oracleStartX, margin + 1 * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#e53e3e', currentStep >= 2)
+    drawGate(ctx, oracleStartX, margin + 1 * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#e53e3e', isOracleActive)
     
     // Multi-controlled Z gate (oracle core)
     const oracleZX = oracleStartX + gateSpacing
     
     // Draw control dots for all qubits except last
     for (let i = 0; i < qubits - 1; i++) {
-      ctx.fillStyle = currentStep >= 2 ? '#ffffff' : '#ffffff60'
+      ctx.fillStyle = isOracleActive ? '#ffffff' : '#ffffff60'
       ctx.beginPath()
       ctx.arc(oracleZX, margin + i * qubitSpacing, 6, 0, 2 * Math.PI)
       ctx.fill()
     }
     
     // Draw single connection line from first control to target
-    ctx.strokeStyle = currentStep >= 2 ? '#ffffff' : '#ffffff60'
+    ctx.strokeStyle = isOracleActive ? '#ffffff' : '#ffffff60'
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.moveTo(oracleZX, margin)
@@ -210,32 +211,35 @@ const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWi
     ctx.stroke()
     
     // Z gate on last qubit
+    ctx.strokeStyle = isOracleActive ? '#ffffff' : '#ffffff60'
+    ctx.lineWidth = 2
     ctx.beginPath()
     ctx.arc(oracleZX, margin + (qubits - 1) * qubitSpacing, 12, 0, 2 * Math.PI)
     ctx.stroke()
-    ctx.fillStyle = currentStep >= 2 ? '#ffffff' : '#ffffff60'
+    ctx.fillStyle = isOracleActive ? '#ffffff' : '#ffffff60'
     ctx.font = '12px Arial'
     ctx.fillText('Z', oracleZX, margin + (qubits - 1) * qubitSpacing)
     
     // X gate after oracle (restore qubit 1)
-    drawGate(ctx, oracleStartX + 2 * gateSpacing, margin + 1 * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#e53e3e', currentStep >= 2)
+    drawGate(ctx, oracleStartX + 2 * gateSpacing, margin + 1 * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#e53e3e', isOracleActive)
 
-    // Step 3: Diffusion operator (amplitude amplification)
+    // Step 3: Diffusion operator (amplitude amplification) - always visible
     const diffuserStartX = margin + 4 * stepWidth
+    const isDiffuserActive = currentStep >= 2
     
     // Diffuser label
-    ctx.fillStyle = currentStep >= 3 ? '#38a169' : '#38a16980'
-    ctx.font = '14px Arial'
+    ctx.fillStyle = isDiffuserActive ? '#38a169' : '#38a16980'
+    ctx.font = isDiffuserActive ? 'bold 14px Arial' : '14px Arial'
     ctx.fillText('Diffuser', diffuserStartX + 2 * gateSpacing, margin - 30)
     
     // H gates (start of diffuser)
     for (let i = 0; i < qubits; i++) {
-      drawGate(ctx, diffuserStartX, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'H', '#38a169', currentStep >= 3)
+      drawGate(ctx, diffuserStartX, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'H', '#38a169', isDiffuserActive)
     }
     
     // X gates (prepare |0⟩ state for phase flip)
     for (let i = 0; i < qubits; i++) {
-      drawGate(ctx, diffuserStartX + gateSpacing, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#38a169', currentStep >= 3)
+      drawGate(ctx, diffuserStartX + gateSpacing, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#38a169', isDiffuserActive)
     }
     
     // Multi-controlled Z (phase flip about |0⟩)
@@ -243,14 +247,14 @@ const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWi
     
     // Draw control dots for all qubits except last
     for (let i = 0; i < qubits - 1; i++) {
-      ctx.fillStyle = currentStep >= 3 ? '#ffffff' : '#ffffff60'
+      ctx.fillStyle = isDiffuserActive ? '#ffffff' : '#ffffff60'
       ctx.beginPath()
       ctx.arc(diffuserZX, margin + i * qubitSpacing, 6, 0, 2 * Math.PI)
       ctx.fill()
     }
     
     // Draw single connection line from first control to target
-    ctx.strokeStyle = currentStep >= 3 ? '#ffffff' : '#ffffff60'
+    ctx.strokeStyle = isDiffuserActive ? '#ffffff' : '#ffffff60'
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.moveTo(diffuserZX, margin)
@@ -258,25 +262,28 @@ const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWi
     ctx.stroke()
     
     // Z gate on last qubit
+    ctx.strokeStyle = isDiffuserActive ? '#ffffff' : '#ffffff60'
+    ctx.lineWidth = 2
     ctx.beginPath()
     ctx.arc(diffuserZX, margin + (qubits - 1) * qubitSpacing, 12, 0, 2 * Math.PI)
     ctx.stroke()
-    ctx.fillStyle = currentStep >= 3 ? '#ffffff' : '#ffffff60'
+    ctx.fillStyle = isDiffuserActive ? '#ffffff' : '#ffffff60'
     ctx.font = '12px Arial'
     ctx.fillText('Z', diffuserZX, margin + (qubits - 1) * qubitSpacing)
     
     // X gates (restore from |0⟩ preparation)
     for (let i = 0; i < qubits; i++) {
-      drawGate(ctx, diffuserStartX + 3 * gateSpacing, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#38a169', currentStep >= 3)
+      drawGate(ctx, diffuserStartX + 3 * gateSpacing, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#38a169', isDiffuserActive)
     }
     
     // H gates (end of diffuser)
     for (let i = 0; i < qubits; i++) {
-      drawGate(ctx, diffuserStartX + 4 * gateSpacing, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'H', '#38a169', currentStep >= 3)
+      drawGate(ctx, diffuserStartX + 4 * gateSpacing, margin + i * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'H', '#38a169', isDiffuserActive)
     }
 
     // Iteration indicator - show when repeating
-    if (currentStep >= 4) {
+    const isIterationActive = currentStep >= 3
+    if (isIterationActive) {
       ctx.strokeStyle = '#fbbf24'
       ctx.setLineDash([5, 5])
       ctx.lineWidth = 2
@@ -294,161 +301,292 @@ const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWi
       const totalIterations = Math.ceil(Math.sqrt(Math.pow(2, qubits)))
       ctx.fillText(`Iteration ${iteration} / ${totalIterations}`, (boxStart + boxEnd) / 2, boxTop - 10)
     }
+    
+    // Step indicators - positioned from bottom of canvas
+    const stepIndicatorY = dimensions.height - 25 // Fixed position from bottom
+    const stepIndicators = [
+      { step: 1, text: 'Superposition', x: hadamardX, active: currentStep >= 0 },
+      { step: 2, text: 'Oracle', x: oracleStartX + gateSpacing, active: currentStep >= 1 },
+      { step: 3, text: 'Diffusion', x: diffuserStartX + 2 * gateSpacing, active: currentStep >= 2 },
+      { step: 4, text: 'Repeat', x: (oracleStartX + diffuserStartX + 4 * gateSpacing) / 2, active: currentStep >= 3 }
+    ]
+    
+    stepIndicators.forEach(({ step, text, x, active }) => {
+      ctx.fillStyle = active ? '#ffffff' : '#ffffff60'
+      ctx.font = active ? 'bold 10px Arial' : '10px Arial'
+      ctx.fillText(`${step}. ${text}`, x, stepIndicatorY)
+    })
   }
 
-  const drawDeutschJozsaGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep) => {
-    // Initial |1⟩ preparation for ancilla
-    if (qubits > 1) {
-      drawGate(ctx, margin + stepWidth - 50, margin + (qubits - 1) * qubitSpacing, gateWidth, gateHeight, 'X', '#667eea', true)
+  const drawDeutschJozsaGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions) => {
+    const ancillaQubit = qubits - 1 // Last qubit is ancilla
+    const gateSpacing = 60 // Spacing between oracle gates
+    
+    // Step 1: Initialize ancilla to |1⟩ - always visible
+    drawGate(ctx, margin + stepWidth * 0.3, margin + ancillaQubit * qubitSpacing, gateWidth * 0.8, gateHeight * 0.8, 'X', '#e53e3e', currentStep >= 0)
+    
+    // Step 2: Apply Hadamard to all qubits - always visible
+    for (let i = 0; i < qubits; i++) {
+      const x = margin + stepWidth * 1.0
+      const y = margin + i * qubitSpacing
+      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', currentStep >= 1)
+    }
+
+    // Step 3: Oracle function - much more detailed implementation
+    const oracleStartX = margin + stepWidth * 1.6
+    const isOracleActive = currentStep >= 2
+    
+    // Oracle section with dashed boundaries
+    ctx.strokeStyle = isOracleActive ? '#667eea' : '#667eea60'
+    ctx.setLineDash([5, 5])
+    ctx.lineWidth = 2
+    const oracleBoxStart = oracleStartX - 30
+    const oracleBoxEnd = oracleStartX + stepWidth * 1.8
+    const oracleBoxTop = margin - 30
+    const oracleBoxBottom = margin + (qubits - 1) * qubitSpacing + 30
+    ctx.strokeRect(oracleBoxStart, oracleBoxTop, oracleBoxEnd - oracleBoxStart, oracleBoxBottom - oracleBoxTop)
+    ctx.setLineDash([])
+    
+    // Oracle label
+    ctx.fillStyle = isOracleActive ? '#667eea' : '#667eea80'
+    ctx.font = isOracleActive ? 'bold 14px Arial' : '14px Arial'
+    ctx.fillText('Oracle Uf', oracleStartX + stepWidth * 0.9, oracleBoxTop - 10)
+    
+    // Detailed oracle implementation - balanced function f(x) = x₀ ⊕ x₁ ⊕ x₂
+    const oraclePositions = [
+      oracleStartX + 20,
+      oracleStartX + 80,
+      oracleStartX + 140,
+      oracleStartX + 200
+    ]
+    
+    // For 4-qubit system (3 input + 1 ancilla)
+    if (qubits >= 4) {
+      // First part: X gate on qubit 1 (preparation for specific function)
+      drawGate(ctx, oraclePositions[0], margin + 1 * qubitSpacing, gateWidth * 0.7, gateHeight * 0.7, 'X', '#38a169', isOracleActive)
+      
+      // Multi-controlled gates implementing f(x) = x₀ ⊕ x₁ ⊕ x₂
+      // CCX gate (Toffoli) - qubit 0 and 1 control, qubit 2 target
+      drawToffoliGate(ctx, margin, margin + qubitSpacing, margin + 2 * qubitSpacing, oraclePositions[1], isOracleActive)
+      
+      // CNOT from qubit 2 to ancilla
+      drawControlledGate(ctx, margin + 2 * qubitSpacing, margin + ancillaQubit * qubitSpacing, oraclePositions[2], gateWidth, gateHeight, isOracleActive)
+      
+      // Restore qubit 2 (inverse of CCX)
+      drawToffoliGate(ctx, margin, margin + qubitSpacing, margin + 2 * qubitSpacing, oraclePositions[3], isOracleActive)
+      
+      // Restore qubit 1
+      drawGate(ctx, oraclePositions[3] + 40, margin + 1 * qubitSpacing, gateWidth * 0.7, gateHeight * 0.7, 'X', '#38a169', isOracleActive)
+    } else if (qubits >= 3) {
+      // Simpler 3-qubit implementation: f(x) = x₀ ⊕ x₁
+      drawControlledGate(ctx, margin, margin + ancillaQubit * qubitSpacing, oraclePositions[0], gateWidth, gateHeight, isOracleActive)
+      drawControlledGate(ctx, margin + qubitSpacing, margin + ancillaQubit * qubitSpacing, oraclePositions[1], gateWidth, gateHeight, isOracleActive)
     }
     
-    // Initial Hadamard gates (all qubits)
+    // Function indicator
+    ctx.fillStyle = isOracleActive ? '#059669' : '#05966960'
+    ctx.font = isOracleActive ? 'bold 10px Arial' : '10px Arial'
+    ctx.fillText('f(x) = x₀⊕x₁⊕x₂', oracleStartX + stepWidth * 0.9, oracleBoxBottom + 15)
+
+    // Step 4: Final Hadamard gates (only on input qubits, not ancilla) - always visible
+    const finalHadamardX = margin + stepWidth * 3.8
+    const isFinalHadamardActive = currentStep >= 3
+    for (let i = 0; i < qubits - 1; i++) {
+      const y = margin + i * qubitSpacing
+      drawGate(ctx, finalHadamardX, y, gateWidth, gateHeight, 'H', '#805ad5', isFinalHadamardActive)
+    }
+    
+    // Add step indicators - positioned from bottom of canvas
+    const stepIndicatorY = dimensions.height - 25 // Fixed position from bottom
+    const stepIndicators = [
+      { step: 1, text: 'Init', x: margin + stepWidth * 0.3, active: currentStep >= 0 },
+      { step: 2, text: 'H-gates', x: margin + stepWidth * 1.0, active: currentStep >= 1 },
+      { step: 3, text: 'Oracle', x: oracleStartX + stepWidth * 0.9, active: currentStep >= 2 },
+      { step: 4, text: 'H-gates', x: finalHadamardX, active: currentStep >= 3 }
+    ]
+    
+    stepIndicators.forEach(({ step, text, x, active }) => {
+      ctx.fillStyle = active ? '#ffffff' : '#ffffff60'
+      ctx.font = active ? 'bold 10px Arial' : '10px Arial'
+      ctx.fillText(`${step}. ${text}`, x, stepIndicatorY)
+    })
+  }
+
+  // Helper function to draw Toffoli gate (CCX)
+  const drawToffoliGate = (ctx, control1Y, control2Y, targetY, x, isActive) => {
+    const opacity = isActive ? '' : '60'
+    
+    // Control dots
+    ctx.fillStyle = isActive ? '#ffffff' : '#ffffff60'
+    ctx.beginPath()
+    ctx.arc(x, control1Y, 6, 0, 2 * Math.PI)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(x, control2Y, 6, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    // Connection lines
+    ctx.strokeStyle = isActive ? '#ffffff' : '#ffffff60'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(x, Math.min(control1Y, control2Y, targetY))
+    ctx.lineTo(x, Math.max(control1Y, control2Y, targetY))
+    ctx.stroke()
+    
+    // Target gate (⊕ symbol)
+    ctx.strokeStyle = isActive ? '#ffffff' : '#ffffff60'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(x, targetY, 12, 0, 2 * Math.PI)
+    ctx.stroke()
+    
+    // Plus symbol inside circle
+    ctx.beginPath()
+    ctx.moveTo(x - 6, targetY)
+    ctx.lineTo(x + 6, targetY)
+    ctx.moveTo(x, targetY - 6)
+    ctx.lineTo(x, targetY + 6)
+    ctx.stroke()
+  }
+
+  const drawBernsteinVaziraniGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions) => {
+    // Initial |1⟩ preparation for ancilla - always visible
+    if (qubits > 1) {
+      drawGate(ctx, margin + stepWidth - 50, margin + (qubits - 1) * qubitSpacing, gateWidth, gateHeight, 'X', '#d69e2e', currentStep >= 0)
+    }
+    
+    // Initial Hadamard gates (all qubits) - always visible
     for (let i = 0; i < qubits; i++) {
       const x = margin + stepWidth
       const y = margin + i * qubitSpacing
-      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', true)
+      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', currentStep >= 1)
     }
 
-    // Oracle function
-    if (currentStep >= 2) {
-      const oracleX = margin + 2 * stepWidth
-      
-      // Draw specific oracle implementation (balanced function example)
-      for (let i = 0; i < qubits - 1; i++) {
-        drawControlledGate(ctx, margin + i * qubitSpacing, margin + (qubits - 1) * qubitSpacing, oracleX, gateWidth, gateHeight, true)
+    // Hidden string oracle (dot product) - always visible
+    const oracleX = margin + 2 * stepWidth
+    const hiddenString = "101" // Example hidden string
+    const isOracleActive = currentStep >= 2
+    
+    // For each bit in hidden string, if 1, add CNOT
+    for (let i = 0; i < Math.min(hiddenString.length, qubits - 1); i++) {
+      if (hiddenString[i] === '1') {
+        drawControlledGate(ctx, margin + i * qubitSpacing, margin + (qubits - 1) * qubitSpacing, oracleX, gateWidth, gateHeight, isOracleActive)
       }
-      
-      ctx.fillStyle = '#667eea'
-      ctx.font = '14px Arial'
-      ctx.fillText('f(x)', oracleX, margin - 30)
-    }
-
-    // Final Hadamard gates (only input qubits)
-    if (currentStep >= 3) {
-      for (let i = 0; i < qubits - 1; i++) {
-        const x = margin + 3 * stepWidth
-        const y = margin + i * qubitSpacing
-        drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', true)
-      }
-    }
-  }
-
-  const drawBernsteinVaziraniGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep) => {
-    // Initial |1⟩ preparation for ancilla
-    if (qubits > 1) {
-      drawGate(ctx, margin + stepWidth - 50, margin + (qubits - 1) * qubitSpacing, gateWidth, gateHeight, 'X', '#d69e2e', true)
     }
     
-    // Initial Hadamard gates (all qubits)
-    for (let i = 0; i < qubits; i++) {
-      const x = margin + stepWidth
+    ctx.fillStyle = isOracleActive ? '#d69e2e' : '#d69e2e80'
+    ctx.font = isOracleActive ? 'bold 14px Arial' : '14px Arial'
+    ctx.fillText('s·x', oracleX, margin - 30)
+
+    // Final Hadamard gates (only input qubits) - always visible
+    const isFinalHadamardActive = currentStep >= 3
+    for (let i = 0; i < qubits - 1; i++) {
+      const x = margin + 3 * stepWidth
       const y = margin + i * qubitSpacing
-      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', true)
-    }
-
-    // Hidden string oracle (dot product)
-    if (currentStep >= 2) {
-      const oracleX = margin + 2 * stepWidth
-      const hiddenString = "101" // Example hidden string
-      
-      // For each bit in hidden string, if 1, add CNOT
-      for (let i = 0; i < Math.min(hiddenString.length, qubits - 1); i++) {
-        if (hiddenString[i] === '1') {
-          drawControlledGate(ctx, margin + i * qubitSpacing, margin + (qubits - 1) * qubitSpacing, oracleX, gateWidth, gateHeight, true)
-        }
-      }
-      
-      ctx.fillStyle = '#d69e2e'
-      ctx.font = '14px Arial'
-      ctx.fillText('s·x', oracleX, margin - 30)
-    }
-
-    // Final Hadamard gates (only input qubits)
-    if (currentStep >= 3) {
-      for (let i = 0; i < qubits - 1; i++) {
-        const x = margin + 3 * stepWidth
-        const y = margin + i * qubitSpacing
-        drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', true)
-      }
+      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', isFinalHadamardActive)
     }
   }
 
-  const drawSimonGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep) => {
+  const drawSimonGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions) => {
     const halfQubits = Math.floor(qubits / 2)
 
-    // Initial Hadamard gates on first register only
+    // Initial Hadamard gates on first register only - always visible
     for (let i = 0; i < halfQubits; i++) {
       const x = margin + stepWidth
       const y = margin + i * qubitSpacing
-      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', true)
+      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', currentStep >= 0)
     }
 
-    // Simon oracle
-    if (currentStep >= 2) {
-      const oracleX = margin + 2 * stepWidth
-      
-      // Copy operation (identity part)
-      for (let i = 0; i < halfQubits; i++) {
-        drawControlledGate(ctx, margin + i * qubitSpacing, margin + (halfQubits + i) * qubitSpacing, oracleX - 20, gateWidth, gateHeight, true)
-      }
-      
-      // Period structure (simplified)
-      const period = "11" // Example period
-      for (let i = 0; i < Math.min(period.length, halfQubits); i++) {
-        if (period[i] === '1') {
-          for (let j = 0; j < halfQubits; j++) {
-            if (j !== i) {
-              drawControlledGate(ctx, margin + i * qubitSpacing, margin + (halfQubits + j) * qubitSpacing, oracleX + 20, gateWidth, gateHeight, true)
-            }
+    // Simon oracle - always visible
+    const oracleX = margin + 2 * stepWidth
+    const isOracleActive = currentStep >= 1
+    
+    // Copy operation (identity part)
+    for (let i = 0; i < halfQubits; i++) {
+      drawControlledGate(ctx, margin + i * qubitSpacing, margin + (halfQubits + i) * qubitSpacing, oracleX - 20, gateWidth, gateHeight, isOracleActive)
+    }
+    
+    // Period structure (simplified)
+    const period = "11" // Example period
+    for (let i = 0; i < Math.min(period.length, halfQubits); i++) {
+      if (period[i] === '1') {
+        for (let j = 0; j < halfQubits; j++) {
+          if (j !== i) {
+            drawControlledGate(ctx, margin + i * qubitSpacing, margin + (halfQubits + j) * qubitSpacing, oracleX + 20, gateWidth, gateHeight, isOracleActive)
           }
         }
       }
-      
-      ctx.fillStyle = '#319795'
-      ctx.font = '14px Arial'
-      ctx.fillText('Uf', oracleX, margin - 30)
     }
+    
+    ctx.fillStyle = isOracleActive ? '#319795' : '#31979580'
+    ctx.font = isOracleActive ? 'bold 14px Arial' : '14px Arial'
+    ctx.fillText('Uf', oracleX, margin - 30)
 
-    // Final Hadamard gates on first register only
-    if (currentStep >= 3) {
-      for (let i = 0; i < halfQubits; i++) {
-        const x = margin + 3 * stepWidth
-        const y = margin + i * qubitSpacing
-        drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', true)
-      }
+    // Final Hadamard gates on first register only - always visible
+    const isFinalHadamardActive = currentStep >= 2
+    for (let i = 0; i < halfQubits; i++) {
+      const x = margin + 3 * stepWidth
+      const y = margin + i * qubitSpacing
+      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#805ad5', isFinalHadamardActive)
     }
+    
+    // Add step indicators - positioned from bottom of canvas
+    const stepIndicatorY = dimensions.height - 25 // Fixed position from bottom
+    const stepIndicators = [
+      { step: 1, text: 'H-gates', x: margin + stepWidth, active: currentStep >= 0 },
+      { step: 2, text: 'Oracle', x: oracleX, active: currentStep >= 1 },
+      { step: 3, text: 'H-gates', x: margin + 3 * stepWidth, active: currentStep >= 2 }
+    ]
+    
+    stepIndicators.forEach(({ step, text, x, active }) => {
+      ctx.fillStyle = active ? '#ffffff' : '#ffffff60'
+      ctx.font = active ? 'bold 10px Arial' : '10px Arial'
+      ctx.fillText(`${step}. ${text}`, x, stepIndicatorY)
+    })
   }
 
-  const drawShorGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep) => {
-  // Hadamard gates on counting qubits (primele qubits)
-  for (let i = 0; i < qubits; i++) {
-    const x = margin + stepWidth
-    const y = margin + i * qubitSpacing
-    drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#f59e42', true)
-  }
+  const drawShorGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep, dimensions) => {
+    // Hadamard gates on counting qubits - always visible
+    for (let i = 0; i < qubits; i++) {
+      const x = margin + stepWidth
+      const y = margin + i * qubitSpacing
+      drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#f59e42', currentStep >= 0)
+    }
 
-  // Oracle/Modular exponentiation (simbolic)
-  if (currentStep >= 2) {
+    // Oracle/Modular exponentiation - always visible
     const oracleX = margin + 2 * stepWidth
-    ctx.fillStyle = '#f59e42'
-    ctx.font = '14px Arial'
+    const isOracleActive = currentStep >= 1
+    ctx.fillStyle = isOracleActive ? '#f59e42' : '#f59e4280'
+    ctx.font = isOracleActive ? 'bold 14px Arial' : '14px Arial'
     ctx.fillText('Uₐ mod N', oracleX, margin - 30)
     for (let i = 0; i < qubits; i++) {
-      drawGate(ctx, oracleX, margin + i * qubitSpacing, gateWidth, gateHeight, 'U', '#f59e42', true)
+      drawGate(ctx, oracleX, margin + i * qubitSpacing, gateWidth, gateHeight, 'U', '#f59e42', isOracleActive)
     }
-  }
 
-  // Inverse QFT (simbolic)
-  if (currentStep >= 3) {
+    // Inverse QFT - always visible
     const qftX = margin + 3 * stepWidth
-    ctx.fillStyle = '#6366f1'
-    ctx.font = '14px Arial'
+    const isQFTActive = currentStep >= 2
+    ctx.fillStyle = isQFTActive ? '#6366f1' : '#6366f180'
+    ctx.font = isQFTActive ? 'bold 14px Arial' : '14px Arial'
     ctx.fillText('QFT†', qftX, margin - 30)
     for (let i = 0; i < qubits; i++) {
-      drawGate(ctx, qftX, margin + i * qubitSpacing, gateWidth, gateHeight, 'QFT†', '#6366f1', true)
+      drawGate(ctx, qftX, margin + i * qubitSpacing, gateWidth, gateHeight, 'QFT†', '#6366f1', isQFTActive)
     }
+    
+    // Add step indicators - positioned from bottom of canvas
+    const stepIndicatorY = dimensions.height - 25 // Fixed position from bottom
+    const stepIndicators = [
+      { step: 1, text: 'H-gates', x: margin + stepWidth, active: currentStep >= 0 },
+      { step: 2, text: 'Oracle', x: oracleX, active: currentStep >= 1 },
+      { step: 3, text: 'QFT†', x: qftX, active: currentStep >= 2 }
+    ]
+    
+    stepIndicators.forEach(({ step, text, x, active }) => {
+      ctx.fillStyle = active ? '#ffffff' : '#ffffff60'
+      ctx.font = active ? 'bold 10px Arial' : '10px Arial'
+      ctx.fillText(`${step}. ${text}`, x, stepIndicatorY)
+    })
   }
-}
 
   return (
     <motion.div 
