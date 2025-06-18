@@ -116,10 +116,8 @@ const Simulator = () => {
     try {
       if (!simulatorInfo) {
         throw new Error('Backend not connected. Please ensure the quantum simulator backend is running.')
-      }
-
-      let result
-        if (customCircuit) {
+      }      let result
+      if (customCircuit) {
         // Allow empty circuits to show initial quantum state
         const formattedGates = circuitGates.map(gate => {
           const baseGate = {
@@ -129,12 +127,14 @@ const Simulator = () => {
             description: gate.description,
             symbol: gate.symbol
           }
-          
-          // Handle two-qubit gates like CNOT
+            // Handle two-qubit gates like CNOT
           if (gate.name === 'CNOT') {
             // For CNOT, we need to specify a target qubit
-            // Default to next qubit if not specified
-            baseGate.target_qubit = gate.target_qubit || ((gate.qubit + 1) % qubits)
+            // Use nullish coalescing to handle target_qubit = 0 correctly
+            baseGate.target_qubit = gate.target_qubit !== undefined && gate.target_qubit !== null 
+              ? gate.target_qubit 
+              : ((gate.qubit + 1) % qubits)
+            console.log(`CNOT gate: control=${gate.qubit}, target=${baseGate.target_qubit}`)
           }
           
           // Handle parameterized gates
@@ -142,10 +142,11 @@ const Simulator = () => {
             baseGate.parameter = gate.parameter
           }
           
+          console.log(`Formatted gate:`, baseGate)
           return baseGate
         })
-        
-        console.log('Sending custom circuit to backend:', formattedGates)
+          console.log('Sending custom circuit to backend:', formattedGates)
+        console.log('Formatted gates JSON:', JSON.stringify(formattedGates, null, 2))
         result = await runCustomCircuit(qubits, formattedGates, 1024)
       } else {
         // Run predefined algorithm
@@ -199,20 +200,22 @@ const Simulator = () => {
       // Add parameter for parameterized gates
       if (draggedGate.parameterized && ['RX', 'RY', 'RZ'].includes(draggedGate.name)) {
         newGate.parameter = getGateParameter(draggedGate.name)
-      }
-      
-      // For CNOT gates, automatically assign a valid target qubit
+      }        // For CNOT gates, automatically assign a valid target qubit
       if (draggedGate.name === 'CNOT') {
+        // Check if we have enough qubits for CNOT
+        if (qubits < 2) {
+          console.error('ERROR: CNOT gate requires at least 2 qubits')
+          alert('CNOT gate requires at least 2 qubits')
+          return
+        }
+        
         // Find a valid target qubit (different from control qubit)
         let targetQubit = (qubitIndex + 1) % qubits
+        // Make sure the target is different from control
         if (targetQubit === qubitIndex) {
-          targetQubit = (qubitIndex + 1) % qubits
-        }
-        // If only 2 qubits and we're on qubit 1, target should be qubit 0
-        if (qubits === 2 && qubitIndex === 1) {
+          // If on last qubit, target the first qubit (0)
           targetQubit = 0
         }
-        newGate.target_qubit = targetQubit
       }
       
       setCircuitGates(prev => [...prev, newGate])
@@ -432,7 +435,26 @@ const Simulator = () => {
                       className="quantum-button-secondary"
                     >
                       <RotateCcw className="w-4 h-4" />
-                    </button>
+                    </button>                    {customCircuit && (
+                      <button
+                        onClick={() => {
+                          // Test CNOT gate creation with target_qubit = 0 (the problematic case)
+                          const testGate = {
+                            name: 'CNOT',
+                            symbol: '⊕',
+                            description: 'Controlled-NOT',
+                            qubit: 1,
+                            timeStep: 0,
+                            target_qubit: 0, // This should not be treated as falsy!
+                            id: Date.now()
+                          }
+                          setCircuitGates([testGate])
+                        }}
+                        className="quantum-button-secondary text-xs"
+                      >
+                        Test CNOT→0
+                      </button>
+                    )}
                   </div>
                   
                   {/* Simulation Status */}
@@ -525,13 +547,21 @@ const Simulator = () => {
                               key={timeStep}
                               className="h-12 border border-dashed border-white/20 rounded flex items-center justify-center drop-zone hover:border-blue-400/50 hover:bg-blue-500/10 transition-colors"
                               onDragOver={handleDragOver}
-                              onDrop={(e) => handleDrop(e, qubitIndex, timeStep)}
-                            >
-                              {gateInPosition ? (
+                              onDrop={(e) => handleDrop(e, qubitIndex, timeStep)}                            >                              {gateInPosition ? (
                                 <div className="relative group">
                                   <div className="w-10 h-10 bg-quantum-500 border border-quantum-400 rounded flex items-center justify-center text-white font-mono text-sm">
-                                    {gateInPosition.symbol}
+                                    {gateInPosition.name === 'CNOT' ? '●' : gateInPosition.symbol}
                                   </div>
+                                  {gateInPosition.name === 'CNOT' && (
+                                    <div className="absolute -bottom-5 left-0 right-0 text-xs text-center text-white/70">
+                                      →q{gateInPosition.target_qubit}
+                                    </div>
+                                  )}
+                                  {gateInPosition.parameter && (
+                                    <div className="absolute -bottom-5 left-0 right-0 text-xs text-center text-white/70">
+                                      {(gateInPosition.parameter / Math.PI).toFixed(2)}π
+                                    </div>
+                                  )}
                                   <button
                                     onClick={() => removeGate(gateInPosition.id)}
                                     className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-xs flex items-center justify-center"
@@ -539,8 +569,30 @@ const Simulator = () => {
                                     ×
                                   </button>
                                 </div>
+                              ) : circuitGates.some(g => g.name === 'CNOT' && g.target_qubit === qubitIndex && g.timeStep === timeStep) ? (
+                                <div className="relative">
+                                  <div className="w-10 h-10 bg-quantum-500 border-2 border-white rounded-full flex items-center justify-center text-white font-mono text-sm">
+                                    ⊕
+                                  </div>
+                                  <div className="absolute -bottom-5 left-0 right-0 text-xs text-center text-white/70">
+                                    Target
+                                  </div>
+                                </div>
                               ) : (
                                 <div className="text-white/30 text-xs">Drop</div>
+                              )}
+                              
+                              {/* CNOT connection lines */}
+                              {gateInPosition && gateInPosition.name === 'CNOT' && gateInPosition.target_qubit !== null && (
+                                <div
+                                  className="absolute w-0.5 bg-quantum-400 z-10"
+                                  style={{
+                                    height: `${Math.abs(gateInPosition.target_qubit - qubitIndex) * 64}px`,
+                                    top: gateInPosition.target_qubit > qubitIndex ? '24px' : `-${Math.abs(gateInPosition.target_qubit - qubitIndex) * 64 - 24}px`,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)'
+                                  }}
+                                />
                               )}
                             </div>
                           )

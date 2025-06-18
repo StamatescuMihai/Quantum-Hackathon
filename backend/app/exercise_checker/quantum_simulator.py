@@ -145,9 +145,13 @@ class QuantumSimulator:
             Dictionary with state_vector, probabilities, and measurement_counts
         """
         try:
+            print(f"Exercise checker received gates: {gates}")
+            
             # Convert gate dictionaries to GateOperation objects
             gate_operations = []
             for i, gate_dict in enumerate(gates):
+                print(f"Processing gate {i}: {gate_dict}")
+                
                 gate_op = GateOperation(
                     name=gate_dict.get("gate", gate_dict.get("name", "")),
                     qubit=gate_dict.get("qubit", 0),
@@ -157,7 +161,19 @@ class QuantumSimulator:
                     description=gate_dict.get("description"),
                     symbol=gate_dict.get("symbol")
                 )
+                
+                print(f"Created GateOperation: name={gate_op.name}, qubit={gate_op.qubit}, target_qubit={gate_op.target_qubit}")
+                
+                # Special validation for CNOT gates
+                if gate_op.name.upper() == 'CNOT':
+                    if gate_op.target_qubit is None:
+                        print(f"ERROR: CNOT gate missing target_qubit. Original dict: {gate_dict}")
+                        raise ValueError(f"CNOT gate requires target_qubit to be specified. Received: {gate_dict}")
+                    print(f"CNOT gate validated: control={gate_op.qubit}, target={gate_op.target_qubit}")
+                
                 gate_operations.append(gate_op)
+            
+            print(f"Final gate operations: {[{'name': g.name, 'qubit': g.qubit, 'target_qubit': g.target_qubit} for g in gate_operations]}")
             
             # Simulate the circuit
             statevector, probabilities, measurement_counts = self._run_simulation(
