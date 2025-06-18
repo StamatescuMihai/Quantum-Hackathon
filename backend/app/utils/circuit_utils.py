@@ -9,16 +9,13 @@ from typing import Dict, Any, List
 def circuit_to_svg(circuit: QuantumCircuit) -> str:
     """Convert quantum circuit to SVG string for web display"""
     try:
-        # Use matplotlib backend to generate SVG
         fig = circuit_drawer(circuit, output='mpl', style='color')
         
-        # Save to string buffer
         buffer = io.StringIO()
         fig.savefig(buffer, format='svg', bbox_inches='tight', dpi=150)
         buffer.seek(0)
         svg_string = buffer.getvalue()
         
-        # Clean up
         plt.close(fig)
         
         return svg_string
@@ -43,7 +40,6 @@ def extract_circuit_stats(circuit: QuantumCircuit) -> Dict[str, Any]:
         "num_parameters": circuit.num_parameters
     }
     
-    # Count gates by type
     for instruction in circuit.data:
         gate_name = instruction[0].name
         stats["gate_counts"][gate_name] = stats["gate_counts"].get(gate_name, 0) + 1
@@ -65,7 +61,7 @@ def format_quantum_state(statevector, num_qubits: int) -> str:
     
     for i in range(num_states):
         amplitude = statevector[i]
-        if abs(amplitude) > 1e-6:  # Only show non-negligible amplitudes
+        if abs(amplitude) > 1e-6:
             binary_state = format(i, f'0{num_qubits}b')
             if amplitude.imag == 0:
                 coeff_str = f"{amplitude.real:.3f}"
@@ -83,7 +79,6 @@ def generate_measurement_histogram_data(counts: Dict[str, int]) -> Dict[str, Any
     """Generate data for measurement histogram visualization"""
     total_shots = sum(counts.values())
     
-    # Sort by state value for consistent ordering
     sorted_states = sorted(counts.keys())
     
     histogram_data = {
@@ -101,26 +96,26 @@ def estimate_algorithm_runtime(num_qubits: int, algorithm_type: str) -> Dict[str
     
     runtimes = {
         "grover": {
-            "classical": num_states,  # O(N)
-            "quantum": int(np.pi * np.sqrt(num_states) / 4),  # O(√N)
+            "classical": num_states,
+            "quantum": int(np.pi * np.sqrt(num_states) / 4),
             "speedup": np.sqrt(num_states),
             "description": "Quadratic speedup for search"
         },
         "deutsch-jozsa": {
-            "classical": 2**(num_qubits-1) + 1,  # O(2^(n-1)+1)
-            "quantum": 1,  # O(1)
+            "classical": 2**(num_qubits-1) + 1,
+            "quantum": 1,
             "speedup": 2**(num_qubits-1) + 1,
             "description": "Exponential speedup for function analysis"
         },
         "bernstein-vazirani": {
-            "classical": num_qubits,  # O(n)
+            "classical": num_qubits,
             "quantum": 1,  # O(1)
             "speedup": num_qubits,
             "description": "Linear speedup for string recovery"
         },
         "simon": {
-            "classical": 2**(num_qubits//2),  # O(2^(n/2))
-            "quantum": num_qubits,  # O(n)
+            "classical": 2**(num_qubits//2),
+            "quantum": num_qubits,
             "speedup": 2**(num_qubits//2) / num_qubits,
             "description": "Exponential speedup for period finding"
         }

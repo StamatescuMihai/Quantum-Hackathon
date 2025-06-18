@@ -4,7 +4,7 @@ import { Calculator, Cpu, Zap, RotateCcw, Play, Settings, Trash2, AlertCircle } 
 import CircuitVisualizer from '../components/CircuitVisualizer'
 import { runQuantumSimulation, runCustomCircuit, getAvailableGates, getSimulatorInfo } from '../services/api'
 
-const Simulator = () => {  // Scroll to top when component mounts and load backend data
+const Simulator = () => {
   useEffect(() => {
     window.scrollTo(0, 0)
     loadBackendData()
@@ -16,7 +16,6 @@ const Simulator = () => {  // Scroll to top when component mounts and load backe
         getSimulatorInfo()
       ])
       
-      // Flatten the gates structure from backend
       const allGates = [
         ...(gatesData.single_qubit_gates || []),
         ...(gatesData.two_qubit_gates || [])
@@ -39,6 +38,7 @@ const Simulator = () => {  // Scroll to top when component mounts and load backe
   const [error, setError] = useState('')
   const [availableGates, setAvailableGates] = useState([])
   const [simulatorInfo, setSimulatorInfo] = useState(null)
+  const [gateParameters, setGateParameters] = useState({}) // Store parameters for each gate type
   // Handle qubit count changes and clean up invalid gates
   const handleQubitChange = (newQubitCount) => {
     const oldQubitCount = qubits
@@ -181,12 +181,18 @@ const Simulator = () => {  // Scroll to top when component mounts and load backe
   }
   const handleDrop = (e, qubitIndex, timeStep) => {
     e.preventDefault()
+    
     if (draggedGate) {
       const newGate = {
         ...draggedGate,
         qubit: qubitIndex,
         timeStep: timeStep,
         id: Date.now() + Math.random() // Unique ID for each gate
+      }
+      
+      // Add parameter for parameterized gates
+      if (draggedGate.parameterized && ['RX', 'RY', 'RZ'].includes(draggedGate.name)) {
+        newGate.parameter = getGateParameter(draggedGate.name)
       }
       
       // For CNOT gates, automatically assign a valid target qubit
@@ -207,14 +213,32 @@ const Simulator = () => {  // Scroll to top when component mounts and load backe
       setDraggedGate(null)
     }
   }
-
   const removeGate = (gateId) => {
     setCircuitGates(prev => prev.filter(gate => gate.id !== gateId))
   }
+  
   const clearCircuit = () => {
     setCircuitGates([])
     setSimulationResult(null)
     setError('')
+  }
+
+  // Handle parameter changes for gates
+  const handleParameterChange = (gateName, parameter) => {
+    setGateParameters(prev => ({
+      ...prev,
+      [gateName]: parameter
+    }))
+  }
+  // Get parameter for a gate type
+  const getGateParameter = (gateName) => {
+    return gateParameters[gateName] || Math.PI / 2 // Default to π/2 for rotation gates
+  }
+
+  // Check if a parameter value is currently selected for a gate
+  const isParameterSelected = (gateName, value) => {
+    const currentValue = getGateParameter(gateName)
+    return Math.abs(currentValue - value) < 0.001 // Small tolerance for floating point comparison
   }
 
   return (
@@ -574,13 +598,71 @@ const Simulator = () => {  // Scroll to top when component mounts and load backe
                     whileDrag={{ scale: 1.1 }}
                     className="p-4 bg-white/10 rounded-lg border border-white/20 cursor-grab hover:bg-white/20 transition-colors text-center active:cursor-grabbing select-none"
                     draggable
-                    onDragStart={(e) => handleDragStart(e, gate)}
-                  >
+                    onDragStart={(e) => handleDragStart(e, gate)}                  >
                     <div className="text-2xl font-mono text-white mb-2">{gate.symbol}</div>
-                    <div className="text-xs text-white/70">{gate.description}</div>
+                    <div className="text-xs text-white/70">{gate.description}</div>                    {/* Parameter input for rotational gates */}
+                    {gate.parameterized && ['RX', 'RY', 'RZ'].includes(gate.name) && (
+                      <div className="mt-2 space-y-1" onClick={(e) => e.stopPropagation()}>
+                        <div className="grid grid-cols-2 gap-1 text-xs">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleParameterChange(gate.name, Math.PI/4)
+                            }}
+                            className={`px-1 py-0.5 text-white rounded transition-colors ${
+                              isParameterSelected(gate.name, Math.PI/4)
+                                ? 'bg-quantum-500 text-white'
+                                : 'bg-white/20 hover:bg-white/30'
+                            }`}
+                          >
+                            π/4
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleParameterChange(gate.name, Math.PI/2)
+                            }}
+                            className={`px-1 py-0.5 text-white rounded transition-colors ${
+                              isParameterSelected(gate.name, Math.PI/2)
+                                ? 'bg-quantum-500 text-white'
+                                : 'bg-white/20 hover:bg-white/30'
+                            }`}
+                          >
+                            π/2
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleParameterChange(gate.name, 3*Math.PI/4)
+                            }}
+                            className={`px-1 py-0.5 text-white rounded transition-colors ${
+                              isParameterSelected(gate.name, 3*Math.PI/4)
+                                ? 'bg-quantum-500 text-white'
+                                : 'bg-white/20 hover:bg-white/30'
+                            }`}
+                          >
+                            3π/4
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleParameterChange(gate.name, Math.PI)
+                            }}
+                            className={`px-1 py-0.5 text-white rounded transition-colors ${
+                              isParameterSelected(gate.name, Math.PI)
+                                ? 'bg-quantum-500 text-white'
+                                : 'bg-white/20 hover:bg-white/30'
+                            }`}
+                          >
+                            π
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
-              </div>              <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+              </div>
+              <div className="mt-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
                 <p className="text-blue-200 text-sm">
                   💡 <strong>How to use:</strong> Drag gates from the library above and drop them on the circuit visualization above. Gates placed: {circuitGates.length}
                   {circuitGates.length === 0 && " (Empty circuit will show the initial |00...0⟩ state)"}

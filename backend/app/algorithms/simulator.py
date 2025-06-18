@@ -2,10 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import numpy as np
-import cmath
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
-from qiskit_aer import AerSimulator, StatevectorSimulator, QasmSimulator
-from qiskit import transpile
+from qiskit_aer import StatevectorSimulator, QasmSimulator
 
 router = APIRouter()
 
