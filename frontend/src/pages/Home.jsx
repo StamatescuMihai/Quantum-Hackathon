@@ -234,19 +234,32 @@ const Home = () => {
               the power of quantum computation.
             </p>
           </motion.div>
-
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"
+            className="space-y-8"
           >
-            {algorithms.map((algorithm, index) => (
-              <motion.div key={index} variants={itemVariants}>
-                <AlgorithmCard {...algorithm} />
-              </motion.div>
-            ))}
+            {/* First row - 3 algorithms */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-center">
+              {algorithms.slice(0, 3).map((algorithm, index) => (
+                <motion.div key={index} variants={itemVariants}>
+                  <AlgorithmCard {...algorithm} />
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Second row - 2 algorithms centered */}
+            <div className="flex justify-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+                {algorithms.slice(3).map((algorithm, index) => (
+                  <motion.div key={index + 3} variants={itemVariants}>
+                    <AlgorithmCard {...algorithm} />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
