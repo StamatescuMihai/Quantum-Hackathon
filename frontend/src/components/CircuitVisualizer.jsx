@@ -96,25 +96,28 @@ const CircuitVisualizer = ({
     drawAlgorithmGates(ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep)
   }
 
-  const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep) => {
-    const gateWidth = 50
-    const gateHeight = 35
+const drawAlgorithmGates = (ctx, algorithm, qubits, margin, qubitSpacing, stepWidth, currentStep) => {
+  const gateWidth = 50
+  const gateHeight = 35
 
-    switch (algorithm) {
-      case 'grover':
-        drawGroverGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
-        break
-      case 'deutsch-jozsa':
-        drawDeutschJozsaGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
-        break
-      case 'bernstein-vazirani':
-        drawBernsteinVaziraniGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
-        break
-      case 'simon':
-        drawSimonGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
-        break
-    }
+  switch (algorithm) {
+    case 'grover':
+      drawGroverGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      break
+    case 'deutsch-jozsa':
+      drawDeutschJozsaGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      break
+    case 'bernstein-vazirani':
+      drawBernsteinVaziraniGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      break
+    case 'simon':
+      drawSimonGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      break
+    case 'shor':
+      drawShorGates(ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep)
+      break
   }
+}
 
   const drawGate = (ctx, x, y, width, height, label, color, isActive = false) => {
     // Gate background
@@ -415,6 +418,37 @@ const CircuitVisualizer = ({
       }
     }
   }
+
+  const drawShorGates = (ctx, qubits, margin, qubitSpacing, stepWidth, gateWidth, gateHeight, currentStep) => {
+  // Hadamard gates on counting qubits (primele qubits)
+  for (let i = 0; i < qubits; i++) {
+    const x = margin + stepWidth
+    const y = margin + i * qubitSpacing
+    drawGate(ctx, x, y, gateWidth, gateHeight, 'H', '#f59e42', true)
+  }
+
+  // Oracle/Modular exponentiation (simbolic)
+  if (currentStep >= 2) {
+    const oracleX = margin + 2 * stepWidth
+    ctx.fillStyle = '#f59e42'
+    ctx.font = '14px Arial'
+    ctx.fillText('Uₐ mod N', oracleX, margin - 30)
+    for (let i = 0; i < qubits; i++) {
+      drawGate(ctx, oracleX, margin + i * qubitSpacing, gateWidth, gateHeight, 'U', '#f59e42', true)
+    }
+  }
+
+  // Inverse QFT (simbolic)
+  if (currentStep >= 3) {
+    const qftX = margin + 3 * stepWidth
+    ctx.fillStyle = '#6366f1'
+    ctx.font = '14px Arial'
+    ctx.fillText('QFT†', qftX, margin - 30)
+    for (let i = 0; i < qubits; i++) {
+      drawGate(ctx, qftX, margin + i * qubitSpacing, gateWidth, gateHeight, 'QFT†', '#6366f1', true)
+    }
+  }
+}
 
   return (
     <motion.div 

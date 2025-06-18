@@ -44,6 +44,15 @@ const Algorithms = () => {
       estimatedTime: "25 min",
       link: "/algorithms/simon",
       color: "from-red-500 to-pink-600"
+    },
+    {
+      title: "Shor's Algorithm",
+      description: "Quantum algorithm for integer factorization with exponential speedup. Breaks classical cryptography and demonstrates the power of quantum period finding.",
+      complexity: "O((log N)^3)",
+      difficulty: "Advanced",
+      estimatedTime: "30 min",
+      link: "/algorithms/shor",
+      color: "from-orange-500 to-yellow-600"
     }
   ]
 

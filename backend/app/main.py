@@ -5,6 +5,7 @@ from app.algorithms.deutsch_jozsa import router as deutsch_router
 from app.algorithms.bernstein_vazirani import router as bernstein_router
 from app.algorithms.simon import router as simon_router
 from app.algorithms.simulator import router as simulator_router
+from app.algorithms.shor import router as shor_router
 from app.exercise_checker.checker import router as exercise_router
 import uvicorn
 
@@ -39,6 +40,7 @@ app.include_router(grover_router, prefix="/api/algorithms", tags=["Grover"])
 app.include_router(deutsch_router, prefix="/api/algorithms", tags=["Deutsch-Jozsa"])
 app.include_router(bernstein_router, prefix="/api/algorithms", tags=["Bernstein-Vazirani"])
 app.include_router(simon_router, prefix="/api/algorithms", tags=["Simon"])
+app.include_router(shor_router, prefix="/api/algorithms", tags=["Shor"])
 app.include_router(simulator_router, prefix="/api/algorithms", tags=["Simulator"])
 app.include_router(exercise_router, prefix="/api", tags=["Exercises"])
 
@@ -96,6 +98,13 @@ async def list_algorithms():
                 "description": "Finds period of function with exponential speedup",
                 "complexity": "O(n)",
                 "qubits": 4
+            },
+            {
+                "name": "shor",
+                "title": "Shor's Algorithm",
+                "description": "Quantum algorithm for integer factorization",
+                "complexity": "O((log N)^3)",
+                "qubits": "n (depends on N)"
             }
         ]
     }
