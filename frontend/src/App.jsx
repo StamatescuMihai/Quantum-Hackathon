@@ -1,4 +1,3 @@
-import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -11,6 +10,8 @@ import BernsteinVazirani from './pages/BernsteinVazirani'
 import Simon from './pages/Simon'
 import Shor from './pages/Shor'
 import Simulator from './pages/Simulator'
+import Exercises from './pages/Exercises'
+import ExercisePage from './pages/ExercisePage'
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
             <Route path="/algorithms/simon" element={<Simon />} />
             <Route path="/algorithms/shor" element={<Shor />} />
             <Route path="/simulator" element={<Simulator />} />
+            <Route path="/exercises" element={<Exercises />} />
+            <Route path="/exercises/:exerciseId" element={<ExercisePage />} />
           </Routes>
         </main>
         <Footer />

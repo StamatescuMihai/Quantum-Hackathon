@@ -2,9 +2,35 @@ import axios from 'axios';
 
 // Configure the base URL for the API
 // Use proxy path in development to avoid CORS and WSL networking issues
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'http://localhost:8000' 
-  : ''; // Use proxy path in development
+const getApiBaseUrl = () => {
+  // Check if we're in production using a different method
+  const isProduction = import.meta.env.PROD;
+  
+  if (isProduction) {
+    return 'http://localhost:8000';
+  }
+  
+  // In development, check if we're accessing from external host
+  const currentHost = window.location.hostname;
+  const currentPort = window.location.port;
+  
+  console.log(`Frontend accessed via: ${currentHost}:${currentPort}`);
+  console.log(`Environment: ${isProduction ? 'production' : 'development'}`);
+  
+  // If accessing via localhost or 127.0.0.1, use proxy path
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    console.log('Using proxy path for API calls');
+    return ''; // Use proxy path - requests will go to /api and be proxied to backend
+  }
+  
+  // If accessing via IP (external access), construct backend URL
+  // This handles WSL access from Windows host
+  const backendUrl = `http://${currentHost}:8000`;
+  console.log(`Using direct backend URL: ${backendUrl}`);
+  return backendUrl;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance with default configuration
 const api = axios.create({
@@ -14,6 +40,37 @@ const api = axios.create({
   },
   timeout: 30000, // 30 second timeout
 });
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    console.log(`API Response: ${response.status} ${response.config.url}`);
+    return response;
+  },
+  (error) => {
+    console.error('API Response Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL
+    });
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Run Grover's Algorithm
@@ -170,29 +227,129 @@ export const runCustomCircuit = async (qubits, gates, shots = 1024) => {
 };
 
 /**
+ * Exercise API Functions
+ */
+
+/**
+ * Fetch all available exercises
+ * @returns {Promise} Response containing list of exercises
+ */
+export const fetchExercises = async () => {
+  try {
+    const response = await api.get('/api/exercises');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch a specific exercise by ID
+ * @param {string} exerciseId - The ID of the exercise to fetch
+ * @returns {Promise} Response containing exercise details
+ */
+export const fetchExercise = async (exerciseId) => {
+  try {
+    console.log(`Fetching exercise ${exerciseId} from API...`);
+    const response = await api.get(`/api/exercises/${exerciseId}`);
+    console.log(`Successfully fetched exercise ${exerciseId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching exercise ${exerciseId}:`, {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        method: error.config?.method
+      }
+    });
+    throw error;
+  }
+};
+
+/**
+ * Submit an exercise solution
+ * @param {string} exerciseId - The ID of the exercise
+ * @param {Array} circuit - The user's circuit solution
+ * @param {string} userId - User identifier
+ * @returns {Promise} Response containing submission results
+ */
+export const submitExercise = async (exerciseId, circuit, userId = 'anonymous') => {
+  try {
+    const response = await api.post(`/api/exercises/${exerciseId}/submit`, {
+      circuit: circuit,
+      user_id: userId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting exercise:', error);
+    throw error;
+  }
+};
+
+/**
+ * Simulate an exercise circuit without submitting
+ * @param {string} exerciseId - The ID of the exercise
+ * @param {Array} circuit - The user's circuit to simulate
+ * @returns {Promise} Response containing simulation results
+ */
+export const simulateExerciseCircuit = async (exerciseId, circuit) => {
+  try {
+    const response = await api.post(`/api/exercises/${exerciseId}/simulate`, {
+      circuit: circuit
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error simulating exercise circuit:', error);
+    throw error;
+  }
+};
+
+/**
+ * Run the quantum simulator
+ * @param {Object} request - Simulator request data
+ * @param {number} request.qubits - Number of qubits
+ * @param {Array} request.gates - Array of gate operations
+ * @param {number} request.shots - Number of measurement shots (optional)
+ * @returns {Promise} Simulation result
+ */
+export const runSimulator = async (request) => {
+  try {
+    const response = await api.post('/api/algorithms/simulator/run', request);
+    return response.data;
+  } catch (error) {
+    console.error('Error running simulator:', error);
+    throw error;
+  }
+};
+
+/**
  * Get available quantum gates
- * @returns {Promise} List of available gates from the backend
+ * @returns {Promise} List of available gates
  */
 export const getAvailableGates = async () => {
   try {
     const response = await api.get('/api/algorithms/simulator/gates');
     return response.data;
   } catch (error) {
-    console.error('Error getting available gates:', error);
+    console.error('Error fetching gates:', error);
     throw error;
   }
 };
 
 /**
  * Get simulator information
- * @returns {Promise} Simulator capabilities and info
+ * @returns {Promise} Simulator info
  */
 export const getSimulatorInfo = async () => {
   try {
     const response = await api.get('/api/algorithms/simulator/info');
     return response.data;
   } catch (error) {
-    console.error('Error getting simulator info:', error);
+    console.error('Error fetching simulator info:', error);
     throw error;
   }
 };

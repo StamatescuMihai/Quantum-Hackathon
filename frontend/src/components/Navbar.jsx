@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, BookOpen, Calculator, Info } from 'lucide-react'
+import { Menu, X, Zap, BookOpen, Calculator, Info, Target } from 'lucide-react'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
-
   const navigation = [
     { name: 'Home', href: '/', icon: Zap },
     { name: 'Algorithms', href: '/algorithms', icon: BookOpen },
+    { name: 'Exercises', href: '/exercises', icon: Target },
     { name: 'Simulator', href: '/simulator', icon: Calculator },
     { name: 'About', href: '/about', icon: Info },
   ]
