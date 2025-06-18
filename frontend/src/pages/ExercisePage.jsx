@@ -23,6 +23,9 @@ const ExercisePage = () => {
   const [exerciseResult, setExerciseResult] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const [showHints, setShowHints] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  
   const availableGates = [
     { name: 'H', symbol: 'H', description: 'Hadamard' },
     { name: 'X', symbol: 'X', description: 'Pauli-X' },
@@ -185,6 +188,83 @@ const ExercisePage = () => {
       console.error('API test failed:', error);
       alert('API connection failed! Check console for details.');
     }
+  };
+
+  const toggleHints = () => {
+    if (!showHints) {
+      setHintsUsed(hintsUsed + 1);
+    }
+    setShowHints(!showHints);
+  };
+
+  const renderHintsSection = () => {
+    if (!exercise || !exercise.hints || exercise.hints.length === 0) {
+      return null;
+    }
+    
+    return (
+      <div className="quantum-card p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-white">Hints</h3>
+          <button
+            onClick={toggleHints}
+            className="px-4 py-2 bg-quantum-600 hover:bg-quantum-700 text-white rounded-lg transition-colors flex items-center gap-2"
+          >
+            {showHints ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
+                Hide Hints
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Show Hints ({exercise.hints.length})
+              </>
+            )}
+          </button>
+        </div>
+        
+        {showHints && (
+          <div className="space-y-3">
+            {hintsUsed > 0 && (
+              <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2 text-yellow-300">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5l-6.928-7.5c-.768-.833-2.002-.833-2.77 0l-6.928 7.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <span className="text-sm font-medium">
+                    Hints used: {hintsUsed} time{hintsUsed !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {exercise.hints.map((hint, index) => (
+              <div key={index} className="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    {index + 1}
+                  </div>
+                  <div className="text-white/90 text-sm leading-relaxed">
+                    {hint}
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600/30">
+              <p className="text-xs text-gray-400">
+                💡 <strong>Tip:</strong> Try to solve the exercise on your own first! Hints are here to help when you're stuck.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderCircuitGrid = () => {
@@ -548,6 +628,9 @@ const ExercisePage = () => {
             
             {/* Results */}
             {renderResults()}
+
+            {/* Hints Section */}
+            {renderHintsSection()}
           </div>
         </div>
       </div>
