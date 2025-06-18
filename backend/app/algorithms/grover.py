@@ -5,8 +5,6 @@ import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.circuit.library import GroverOperator
 from qiskit_aer import AerSimulator
-from qiskit import transpile
-import json
 
 router = APIRouter()
 

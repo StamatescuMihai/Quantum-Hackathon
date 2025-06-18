@@ -1,18 +1,57 @@
 {
     "exercises": [
         {
-            "id": "ex_never_reach_here",
-            "title": "Testing Exercise",
-            "description": "Test descritpion",
-            "difficulty": "help",
+            "id": "ex001",
+            "title": "Basic Superposition",
+            "description": "Create an equal superposition state |+⟩ = (|0⟩ + |1⟩)/√2 using a single Hadamard gate",
+            "difficulty": "beginner",
             "num_qubits": 1,
-            "target_type": "state_vector or other stuff. make sure to change in target_data",
+            "target_type": "state_vector",
             "target_data": {
-                "state_vector": [0.00, 0.00],
+                "state_vector": [0.7071067811865476, 0.7071067811865476],
                 "tolerance": 0.001
             },
-            "initial_circuit_mightnotbeused": [],
-            "max_gates_mightnotbeused": 1
+            "hints": [
+                "Use a Hadamard gate on qubit 0",
+                "The Hadamard gate creates equal superposition"
+            ],
+            "tags": ["basic", "superposition", "single-qubit"]
+        },
+        {
+            "id": "ex002",
+            "title": "Bell State Creation",
+            "description": "Create a Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2 showing quantum entanglement",
+            "difficulty": "intermediate",
+            "num_qubits": 2,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0.7071067811865476, 0.0, 0.0, 0.7071067811865476],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Start with a Hadamard gate on the first qubit",
+                "Use a CNOT gate to create entanglement",
+                "The target state should have equal amplitudes for |00⟩ and |11⟩"
+            ],
+            "tags": ["entanglement", "bell-state", "two-qubit"]
+        },
+        {
+            "id": "ex003",
+            "title": "Probability Challenge",
+            "description": "Create a quantum state where measuring gives |0⟩ with 75% probability and |1⟩ with 25% probability",
+            "difficulty": "intermediate",
+            "num_qubits": 1,
+            "target_type": "probabilities",
+            "target_data": {
+                "measurement_probabilities": {"0": 0.75, "1": 0.25},
+                "tolerance": 0.01
+            },
+            "hints": [
+                "Think about the relationship between amplitudes and probabilities",
+                "Probability = |amplitude|²",
+                "You might need rotation gates like RY"
+            ],
+            "tags": ["probability", "rotation", "measurement"]
         }
     ]
 }

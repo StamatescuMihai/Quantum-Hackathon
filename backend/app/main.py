@@ -5,6 +5,7 @@ from app.algorithms.deutsch_jozsa import router as deutsch_router
 from app.algorithms.bernstein_vazirani import router as bernstein_router
 from app.algorithms.simon import router as simon_router
 from app.algorithms.simulator import router as simulator_router
+from app.exercise_checker.checker import router as exercise_router
 import uvicorn
 
 app = FastAPI(
@@ -15,21 +16,31 @@ app = FastAPI(
     redoc_url="/api/redoc"
 )
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        # WSL
+        "http://172.16.*",
+        "http://192.168.*",
+        "http://10.*",
+        # All origins
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include algorithm routers
 app.include_router(grover_router, prefix="/api/algorithms", tags=["Grover"])
 app.include_router(deutsch_router, prefix="/api/algorithms", tags=["Deutsch-Jozsa"])
 app.include_router(bernstein_router, prefix="/api/algorithms", tags=["Bernstein-Vazirani"])
 app.include_router(simon_router, prefix="/api/algorithms", tags=["Simon"])
 app.include_router(simulator_router, prefix="/api/algorithms", tags=["Simulator"])
+app.include_router(exercise_router, prefix="/api", tags=["Exercises"])
 
 @app.get("/")
 async def root():
