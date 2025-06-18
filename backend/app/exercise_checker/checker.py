@@ -42,8 +42,6 @@ async def get_exercise(exercise_id: str):
 async def submit_exercise_solution(exercise_id: str, submission: Dict):
     """Submit a solution for an exercise and get feedback"""
     try:
-        print(f"Submitting solution for exercise {exercise_id}")
-        print(f"Submission data: {submission}")
         
         # Get the exercise
         exercise = exercise_manager.get_exercise(exercise_id)
@@ -54,19 +52,13 @@ async def submit_exercise_solution(exercise_id: str, submission: Dict):
         user_circuit = submission.get("circuit", [])
         user_id = submission.get("user_id", "anonymous")
         
-        print(f"User circuit: {user_circuit}")
-        print(f"Exercise num_qubits: {exercise['num_qubits']}")
         
         # Simulate the user's circuit
         num_qubits = exercise["num_qubits"]
         sim_result = simulator.simulate_circuit(user_circuit, num_qubits)
         
-        print(f"Simulation result: {sim_result}")
-        
         # Check the solution
         passed, score = check_exercise_solution(exercise, sim_result)
-        
-        print(f"Check result: passed={passed}, score={score}")
         
         return {
             "exercise_id": exercise_id,
@@ -79,7 +71,6 @@ async def submit_exercise_solution(exercise_id: str, submission: Dict):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error in submit_exercise_solution: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error submitting solution: {str(e)}")
@@ -161,8 +152,6 @@ def check_state_vector_match(target_data: Dict, sim_result: Dict, tolerance: flo
     
     # Normalize fidelity (optional, for better scoring)
     # fidelity = fidelity / len(target_state)
-    
-    print(f"State vector check: total_difference={total_difference:.8f}, tolerance={tolerance:.8f}")
     
     if total_difference <= tolerance:
         # For very small differences (near perfect), give a perfect score
