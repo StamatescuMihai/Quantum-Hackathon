@@ -4,6 +4,7 @@ from app.algorithms.grover import router as grover_router
 from app.algorithms.deutsch_jozsa import router as deutsch_router
 from app.algorithms.bernstein_vazirani import router as bernstein_router
 from app.algorithms.simon import router as simon_router
+from app.algorithms.simulator import router as simulator_router
 import uvicorn
 
 app = FastAPI(
@@ -28,6 +29,7 @@ app.include_router(grover_router, prefix="/api/algorithms", tags=["Grover"])
 app.include_router(deutsch_router, prefix="/api/algorithms", tags=["Deutsch-Jozsa"])
 app.include_router(bernstein_router, prefix="/api/algorithms", tags=["Bernstein-Vazirani"])
 app.include_router(simon_router, prefix="/api/algorithms", tags=["Simon"])
+app.include_router(simulator_router, prefix="/api/algorithms", tags=["Simulator"])
 
 @app.get("/")
 async def root():
@@ -42,7 +44,7 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "version": "1.2.1",
         "message": "Quantum Core API is running",
-        "algorithms": ["grover", "deutsch-jozsa", "bernstein-vazirani", "simon"]
+        "algorithms": ["grover", "deutsch-jozsa", "bernstein-vazirani", "simon", "simulator"]
     }
 
 # Add a simple health check at root level for Docker

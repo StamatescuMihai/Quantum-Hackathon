@@ -71,7 +71,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-            About Quantum Explorer
+            About Quantum Core
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
             Bridging the gap between quantum theory and practical understanding through 
