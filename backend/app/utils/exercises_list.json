@@ -1,0 +1,18 @@
+{
+    "exercises": [
+        {
+            "id": "ex_never_reach_here",
+            "title": "Testing Exercise",
+            "description": "Test descritpion",
+            "difficulty": "help",
+            "num_qubits": 1,
+            "target_type": "state_vector or other stuff. make sure to change in target_data",
+            "target_data": {
+                "state_vector": [0.00, 0.00],
+                "tolerance": 0.001
+            },
+            "initial_circuit_mightnotbeused": [],
+            "max_gates_mightnotbeused": 1
+        }
+    ]
+}
