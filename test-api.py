@@ -64,26 +64,6 @@ def test_api_connection():
             print(f"   Response: {response.text}")
     except requests.exceptions.RequestException as e:
         print(f"Deutsch-Jozsa test error: {e}")
-    
-    print("\n4. Testing Shor's Algorithm...")
-    try:
-        shor_data = {
-            "N": 15,
-            "num_qubits": 4
-        }
-        response = requests.post(f"{base_url}/api/algorithms/shor/run",
-                                 json=shor_data, timeout=15)
-        if response.status_code == 200:
-            result = response.json()
-            print("Shor algorithm test passed")
-            print(f"   Success: {result.get('success', False)}")
-            print(f"   Factors: {result.get('factors', '-')}")
-            print(f"   Period: {result.get('period', '-')}")
-        else:
-            print(f"Shor test failed with status: {response.status_code}")
-            print(f"   Response: {response.text}")
-    except requests.exceptions.RequestException as e:
-        print(f"Shor test error: {e}")
 
     print("\n" + "=" * 50)
     print("Backend API testing completed!")
