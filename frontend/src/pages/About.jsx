@@ -43,7 +43,7 @@ const About = () => {
     },
     {
       name: "Cavescu Dumitru-Andrei",
-      role: "Web Designer",
+      role: "Software Engineer & Web Designer",
       image: "images/dimi.jpg"
     },
     {
