@@ -99,19 +99,29 @@ def simulate_shor_circuit(circuit: QuantumCircuit) -> (List[float], List[float],
         num_states = 2 ** circuit.num_qubits
         return [0.0] * num_states, [0.0] * num_states, {}
 
+# ...existing code...
+
 @router.post("/shor/run", response_model=ShorResponse)
 async def run_shor_algorithm(request: ShorRequest):
     """Run Shor's algorithm (demo version)"""
     # Step 1: Classical part
     factor, a, message = classical_shor(request.N, request.attempts)
     if factor and factor != 1 and factor != request.N:
-        return ShorResponse(
-            success=True,
-            N=request.N,
-            a=a,
-            factor=factor,
-            message=message
-        )
+        return {
+            "success": True,
+            "N": request.N,
+            "a": a,
+            "factors": [factor],
+            "period": None,       # <-- adaugă period (None dacă nu ai)
+            "message": message,
+            "measurement_counts": None,  # <-- adaugă, chiar dacă e None
+            "probabilities": None,
+            "quantum_state": None,
+            "circuit_data": None,
+            "svg": None,
+            "ascii": None,
+            "stats": None
+        }
     # Step 2: Quantum part (only for N=15, a=2 or 7)
     if request.N == 15:
         a = request.a if request.a else 2
@@ -120,31 +130,41 @@ async def run_shor_algorithm(request: ShorRequest):
         svg = circuit_to_svg(circuit)
         ascii_diagram = circuit_to_ascii(circuit)
         stats = extract_circuit_stats(circuit)
-        return ShorResponse(
-            success=True if counts else False,
-            N=request.N,
-            a=a,
-            factor=None,
-            message="Quantum order finding simulated (demo, not full Shor).",
-            circuit_data={
+        period = 4 if a == 2 else None
+        return {
+            "success": True if counts else False,
+            "N": request.N,
+            "a": a,
+            "factors": None,
+            "period": period,
+            "message": "Quantum order finding simulated (demo, not full Shor).",
+            "circuit_data": {
                 "num_qubits": circuit.num_qubits,
                 "a": a,
                 "gates": stats["gate_counts"]
             },
-            quantum_state=statevector,
-            probabilities=probabilities,
-            measurement_counts=counts,
-            svg=svg,
-            ascii=ascii_diagram,
-            stats=stats
-        )
-    return ShorResponse(
-        success=False,
-        N=request.N,
-        a=None,
-        factor=None,
-        message="Quantum simulation only available for N=15 in this demo."
-    )
+            "quantum_state": statevector,
+            "probabilities": probabilities,
+            "measurement_counts": counts,
+            "svg": svg,
+            "ascii": ascii_diagram,
+            "stats": stats
+        }
+    return {
+        "success": False,
+        "N": request.N,
+        "a": None,
+        "factors": None,
+        "period": None,
+        "message": "Quantum simulation only available for N=15 in this demo.",
+        "measurement_counts": None,
+        "probabilities": None,
+        "quantum_state": None,
+        "circuit_data": None,
+        "svg": None,
+        "ascii": None,
+        "stats": None
+    }
 
 @router.post("/shor/simulate", response_model=ShorResponse)
 async def simulate_shor_algorithm(request: ShorRequest):

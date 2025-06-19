@@ -52,6 +52,301 @@
                 "You might need rotation gates like RY"
             ],
             "tags": ["probability", "rotation", "measurement"]
+        },
+        {
+            "id": "ex004",
+            "title": "Three-Qubit GHZ State",
+            "description": "Create a GHZ state: (|000⟩ + |111⟩)/√2",
+            "difficulty": "intermediate",
+            "num_qubits": 3,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0.7071067811865476, 0, 0, 0, 0, 0, 0, 0.7071067811865476],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Use H gate on qubit 0, then CNOT from qubit 0→1 and 1→2"
+            ],
+            "tags": [
+                "ghz",
+                "entanglement",
+                "three-qubit"
+            ]
+        },
+        {
+            "id": "ex005",
+            "title": "Phase Kickback",
+            "description": "Demonstrate phase kickback using a controlled-Z gate",
+            "difficulty": "advanced",
+            "num_qubits": 2,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0.5, 0.5, 0.5, -0.5],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Start in (|0⟩ + |1⟩)⊗(|0⟩ + |1⟩), then apply CZ"
+            ],
+            "tags": [
+                "phase",
+                "kickback",
+                "two-qubit",
+                "interference"
+            ]
+        },
+        {
+            "id": "ex006",
+            "title": "Grover's Diffuser",
+            "description": "Implement Grover's diffuser for 2 qubits",
+            "difficulty": "advanced",
+            "num_qubits": 2,
+            "target_type": "unitary",
+            "target_data": {
+                "unitary_matrix": [
+                    [
+                        0.5,
+                        -0.5,
+                        -0.5,
+                        -0.5
+                    ],
+                    [
+                        -0.5,
+                        0.5,
+                        -0.5,
+                        -0.5
+                    ],
+                    [
+                        -0.5,
+                        -0.5,
+                        0.5,
+                        -0.5
+                    ],
+                    [
+                        -0.5,
+                        -0.5,
+                        -0.5,
+                        0.5
+                    ]
+                ],
+                "tolerance": 0.01
+            },
+            "hints": [
+                "Use H, X, CZ, X, H pattern on each qubit"
+            ],
+            "tags": [
+                "grover",
+                "diffusion",
+                "unitary"
+            ]
+        },
+        {
+            "id": "ex007",
+            "title": "Three-Qubit W State",
+            "description": "Prepare the W state: (|001⟩ + |010⟩ + |100⟩)/√3 representing distributed single excitation.",
+            "difficulty": "intermediate",
+            "num_qubits": 3,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0.0, 0.5773502691896257, 0.5773502691896257, 0.0, 0.5773502691896257, 0.0, 0.0, 0.0],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Create |100⟩ then use controlled rotations & CNOTs to distribute amplitude.",
+                "Alternatively use symmetric decomposition with SU(2) multiplexers."
+            ],
+            "tags": [
+                "w-state",
+                "entanglement",
+                "three-qubit"
+            ]
+        },
+        {
+            "id": "ex008",
+            "title": "Deutsch-Jozsa Balanced Function",
+            "description": "Implement Deutsch-Jozsa algorithm for a 2-bit balanced oracle (f(x)=x₀ ⊕ x₁) so the first register ends in |11⟩.",
+            "difficulty": "intermediate",
+            "num_qubits": 2,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0, 0, 0, 1],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Start with H on both qubits, apply the balanced oracle (CNOT with qubit 0 control & qubit 1 target).",
+                "Finish with another layer of Hadamards."
+            ],
+            "tags": [
+                "deutsch-jozsa",
+                "oracle",
+                "algorithm",
+                "two-qubit"
+            ]
+        },
+        {
+            "id": "ex009",
+            "title": "Bernstein-Vazirani (s = 101)",
+            "description": "Find the hidden bit-string s = 101 using the Bernstein-Vazirani algorithm. Final state should be |101⟩.",
+            "difficulty": "intermediate",
+            "num_qubits": 3,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0, 0, 0, 0, 0, 1, 0, 0],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Apply Hadamard on all 3 input qubits.",
+                "Use an oracle that applies Z to qubits where sᵢ = 1 (qubits 0 and 2).",
+                "Hadamard again reveals s in computational basis."
+            ],
+            "tags": [
+                "bernstein-vazirani",
+                "oracle",
+                "three-qubit"
+            ]
+        },
+        {
+            "id": "ex010",
+            "title": "SWAP Gate Construction",
+            "description": "Build the 2-qubit SWAP gate and verify its 4x4 unitary matrix.",
+            "difficulty": "advanced",
+            "num_qubits": 2,
+            "target_type": "unitary",
+            "target_data": {
+                "unitary_matrix": [
+                    [1, 0, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 0, 1]
+                ],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Decompose SWAP as three CNOTs: CNOT12, CNOT21, CNOT12.",
+                "Confirm matrix matches expected permutation."
+            ],
+            "tags": [
+                "swap",
+                "unitary",
+                "two-qubit"
+            ]
+        },
+        {
+            "id": "ex011",
+            "title": "Classical Bit Flip Simulation",
+            "description": "Simulate a classical NOT operation using the X gate.",
+            "difficulty": "beginner",
+            "num_qubits": 1,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [0, 1],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Start in |0⟩, apply an X gate"
+            ],
+            "tags": [
+                "bitflip",
+                "x-gate",
+                "single-qubit"
+            ]
+        },
+        {
+            "id": "ex012",
+            "title": "Hadamard Interference",
+            "description": "Demonstrate quantum interference by applying H twice to |0⟩.",
+            "difficulty": "beginner",
+            "num_qubits": 1,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [1.0, 0.0],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Use two Hadamard gates in a row",
+                "This should bring |0⟩ → |+⟩ → |0⟩"
+            ],
+            "tags": [
+                "interference",
+                "hadamard",
+                "single-qubit"
+            ]
+        },
+        {
+            "id": "ex013",
+            "title": "Equal Superposition of 3 Qubits",
+            "description": "Apply Hadamard to all qubits to generate uniform superposition of 8 basis states.",
+            "difficulty": "intermediate",
+            "num_qubits": 3,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [
+                    0.35355339059327373,
+                    0.35355339059327373,
+                    0.35355339059327373,
+                    0.35355339059327373,
+                    0.35355339059327373,
+                    0.35355339059327373,
+                    0.35355339059327373,
+                    0.35355339059327373
+                ],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "H⊗H⊗H applied to |000⟩ gives uniform amplitudes"
+            ],
+            "tags": [
+                "superposition",
+                "uniform",
+                "three-qubit"
+            ]
+        },
+        {
+            "id": "ex014",
+            "title": "Z Gate Phase Effect",
+            "description": "Show that applying a Z gate changes phase of |1⟩ while leaving |0⟩ unchanged.",
+            "difficulty": "intermediate",
+            "num_qubits": 1,
+            "target_type": "state_vector",
+            "target_data": {
+                "state_vector": [
+                    0.7071067811865475,
+                    -0.7071067811865475
+                ],
+                "tolerance": 0.001
+            },
+            "hints": [
+                "Prepare |+⟩ then apply Z"
+            ],
+            "tags": [
+                "z-gate",
+                "phase",
+                "interference"
+            ]
+        },
+        {
+            "id": "ex015",
+            "title": "Controlled-Hadamard Construction",
+            "description": "Create a controlled-Hadamard gate and verify it applies H only when control qubit is |1⟩.",
+            "difficulty": "advanced",
+            "num_qubits": 2,
+            "target_type": "unitary",
+            "target_data": {
+                "unitary_matrix": [
+                    [1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 0.7071067811865475, 0.7071067811865475],
+                    [0, 0, 0.7071067811865475, -0.7071067811865475]
+                ],
+                "tolerance": 0.01
+            },
+            "hints": [
+                "Use decomposition with ancilla or block-controlled gates"
+            ],
+            "tags": [
+                "controlled",
+                "hadamard",
+                "two-qubit"
+            ]
         }
     ]
 }
