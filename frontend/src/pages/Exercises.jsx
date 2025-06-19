@@ -18,7 +18,26 @@ const Exercises = () => {
     try {
       setLoading(true);
       const data = await fetchExercises();
-      setExercises(data.exercises || []);
+      
+      const difficultyOrder = {
+        'beginner': 1,
+        'intermediate': 2,
+        'advanced': 3
+      };
+      
+      const sortedExercises = (data.exercises || []).sort((a, b) => {
+        const difficultyA = difficultyOrder[a.difficulty?.toLowerCase()] || 999;
+        const difficultyB = difficultyOrder[b.difficulty?.toLowerCase()] || 999;
+        
+        if (difficultyA !== difficultyB) {
+          return difficultyA - difficultyB;
+        }
+        
+        // Sort by id in case of eq
+        return a.id.localeCompare(b.id);
+      });
+      
+      setExercises(sortedExercises);
     } catch (err) {
       setError('Failed to load exercises');
       console.error('Error loading exercises:', err);
