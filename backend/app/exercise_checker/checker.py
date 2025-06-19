@@ -142,13 +142,12 @@ def check_state_vector_match(target_data: Dict, sim_result: Dict, tolerance: flo
             # Actual is real number
             actual_complex = complex(actual_state[i], 0)
         
-        # Calculate magnitude difference
-        target_magnitude = abs(target_complex)
-        actual_magnitude = abs(actual_complex)
-        total_difference += abs(target_magnitude - actual_magnitude)
+        # Calculate complex amplitude difference (preserving phase information)
+        amplitude_difference = abs(target_complex - actual_complex)
+        total_difference += amplitude_difference
         
-        # Calculate fidelity contribution
-        fidelity += target_magnitude * actual_magnitude
+        # Calculate fidelity contribution (inner product of complex amplitudes)
+        fidelity += (target_complex.conjugate() * actual_complex).real
     
     # Normalize fidelity (optional, for better scoring)
     # fidelity = fidelity / len(target_state)
