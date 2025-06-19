@@ -87,7 +87,6 @@ const Navbar_course_intro = () => {
         <ul className="space-y-2">
           {lessons.map((lesson, index) => {
             const isActive = location.pathname.endsWith(lesson.id);
-            const isCompleted = false; // You can implement completion tracking logic here
             
             return (
               <li key={lesson.id}>
