@@ -92,12 +92,30 @@ const ExercisePage = () => {
         return
       }
       
+      // Check if there's already a CNOT gate in this time step
+      const existingCNOTInTimeStep = gates.find(g => g.name === 'CNOT' && g.timeStep === timeStep);
+      if (existingCNOTInTimeStep) {
+        console.error('ERROR: Cannot place multiple CNOT gates in the same time step')
+        alert('Cannot place multiple CNOT gates in the same time step. CNOT gates must be in different columns.')
+        return
+      }
+      
       // Find a valid target qubit (different from control qubit)
       finalTargetQubit = (qubit + 1) % exercise.num_qubits
       // Make sure the target is different from control
       if (finalTargetQubit === qubit) {
         finalTargetQubit = 0 // If we're on the last qubit, target the first qubit
       }
+      
+      // Check if target qubit already has a gate in this time step
+      const targetHasGate = gates.find(g => g.qubit === finalTargetQubit && g.timeStep === timeStep);
+      if (targetHasGate) {
+        console.error('ERROR: CNOT target qubit already has a gate in this time step')
+        alert(`Cannot place CNOT gate: target qubit ${finalTargetQubit} already has a gate in this time step.`)
+        return
+      }
+      
+      console.log(`Auto-assigning CNOT target: control=${qubit}, target=${finalTargetQubit}`)
     }
     
     const newGate = {
@@ -303,27 +321,47 @@ const ExercisePage = () => {
                       onClick={() => gateAtPosition ? null : addGate(qubit, step)}
                     >
                       {gateAtPosition && (
-                        <div
-                          className="bg-quantum-500 text-white px-2 py-1 rounded text-sm font-semibold cursor-pointer hover:bg-red-500 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const gateIndex = gates.findIndex(g => g === gateAtPosition);
-                            removeGate(gateIndex);
-                          }}
-                          title={
-                            gateAtPosition.name === 'CNOT' 
-                              ? `CNOT: Control q${gateAtPosition.qubit} → Target q${gateAtPosition.target_qubit}`
-                              : gateAtPosition.parameter 
-                                ? `${gateAtPosition.name}(${gateAtPosition.parameter.toFixed(2)})` 
-                                : gateAtPosition.description
-                          }
-                        >
-                          {gateAtPosition.name === 'CNOT' ? '●' : gateAtPosition.symbol}
-                          {gateAtPosition.parameter && (
-                            <div className="text-xs text-white/80">
-                              {gateAtPosition.parameter.toFixed(2)}
-                            </div>
-                          )}
+                        <div className="relative group">
+                          <div
+                            className={`bg-quantum-500 text-white px-2 py-1 rounded text-sm font-semibold transition-colors ${
+                              gateAtPosition.name === 'CNOT' ? 'cursor-pointer hover:bg-quantum-400' : ''
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (gateAtPosition.name === 'CNOT') {
+                                // Click to change CNOT target
+                                const gateIndex = gates.findIndex(g => g === gateAtPosition);
+                                changeCNOTTarget(gateIndex);
+                              }
+                            }}
+                            title={
+                              gateAtPosition.name === 'CNOT' 
+                                ? `CNOT: Control q${gateAtPosition.qubit} → Target q${gateAtPosition.target_qubit}. Click to change target.`
+                                : gateAtPosition.parameter 
+                                  ? `${gateAtPosition.name}(${gateAtPosition.parameter.toFixed(2)})`
+                                  : gateAtPosition.description
+                            }
+                          >
+                            {gateAtPosition.name === 'CNOT' ? '●' : gateAtPosition.symbol}
+                            {gateAtPosition.parameter && (
+                              <div className="text-xs text-white/80">
+                                {gateAtPosition.parameter.toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Remove button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const gateIndex = gates.findIndex(g => g === gateAtPosition);
+                              removeGate(gateIndex);
+                            }}
+                            className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-xs flex items-center justify-center"
+                            title="Remove gate"
+                          >
+                            ×
+                          </button>
                         </div>
                       )}
                       
@@ -415,7 +453,9 @@ const ExercisePage = () => {
           )}
           
           <p className="text-sm text-white/70 mt-2">
-            Click on the circuit grid to place the selected gate
+            Click on the circuit grid to place the selected gate. 
+            For CNOT gates, click the control qubit (●) to cycle through target qubits.
+            Hover over any gate to see the remove button (×).
           </p>
         </div>
         
@@ -485,6 +525,55 @@ const ExercisePage = () => {
       </div>
     );
   };
+
+  // Change CNOT target qubit
+  const changeCNOTTarget = (gateIndex) => {
+    setGates(prev => prev.map((gate, index) => {
+      if (index === gateIndex && gate.name === 'CNOT') {
+        // Find next valid target qubit
+        let newTarget = (gate.target_qubit + 1) % exercise.num_qubits
+        let attempts = 0
+        
+        // Keep trying until we find a valid target
+        while (attempts < exercise.num_qubits) {
+          // Skip the control qubit
+          if (newTarget === gate.qubit) {
+            newTarget = (newTarget + 1) % exercise.num_qubits
+            attempts++
+            continue
+          }
+          
+          // Check if target qubit already has a gate in this time step
+          const targetHasGate = prev.find(g => g.qubit === newTarget && g.timeStep === gate.timeStep && index !== prev.indexOf(g));
+          if (!targetHasGate) {
+            // Found a valid target
+            break
+          }
+          
+          newTarget = (newTarget + 1) % exercise.num_qubits
+          attempts++
+        }
+        
+        if (attempts >= exercise.num_qubits) {
+          console.error('ERROR: No valid target qubit available')
+          alert('No valid target qubit available in this time step.')
+          return gate // Don't change the gate
+        }
+        
+        console.log(`Changing CNOT target: control=${gate.qubit}, old target=${gate.target_qubit}, new target=${newTarget}`)
+        
+        return {
+          ...gate,
+          target_qubit: newTarget
+        }
+      }
+      return gate
+    }))
+    
+    // Clear simulation results since circuit changed
+    setSimulationResult(null)
+    setExerciseResult(null)
+  }
 
   if (loading) {
     return (
