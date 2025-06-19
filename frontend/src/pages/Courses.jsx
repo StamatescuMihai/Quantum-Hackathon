@@ -21,35 +21,35 @@ const Courses = () => {
       title: "2. Quantum Logic gates",
       description: "An explanation of the most basic and used Quantum gates.",
       estimatedTime: "15 min",
-      link: "/courses/log_gates",
+      link: "",
       color: "from-green-500 to-emerald-600"
     },
     {
       title: "3. Basic algorithms",
       description: "Here we learn about the most basics algorithms in the world of Quantum. Algorithms such as Grover and Bernstein-Vazirani.",
       estimatedTime: "15 min",
-      link: "/courses/algo",
+      link: "",
       color: "from-green-500 to-emerald-600"
     },
     {
       title: "4. Quantum Entanglement",
       description: "In this course we take a deep dive into what is Quantum entanglement, how it works, and what are its uses",
       estimatedTime: "15 min",
-      link: "/courses/Entangle",
+      link: "",
       color: "from-green-500 to-emerald-600"
     },
     {
       title: "5. Quantum Key Distribution",
       description: "A course aimed to give a solid understanding about what QKD is and how Quantum infrastructure works.",
       estimatedTime: "15 min",
-      link: "/courses/qkd",
+      link: "",
       color: "from-green-500 to-emerald-600"
     },
     {
       title: "Other entertaining Quantum lectures",
       description: "Quantum is fun and this just proves it.",
       estimatedTime: "15 min",
-      link: "/courses/fun",
+      link: "",
       color: "from-green-500 to-emerald-600"
     }
   ]
