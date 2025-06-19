@@ -244,16 +244,10 @@ const About = () => {
                 <h3 className="text-xl font-semibold text-white mb-4">Coming Soon</h3>
                 <ul className="space-y-3 text-white/70 text-left inline-block">
                   <li className="flex items-center">
-                    {'>'} Shor's Algorithm Implementation
-                  </li>
-                  <li className="flex items-center">
                     {'>'} Quantum Machine Learning Modules
                   </li>
                   <li className="flex items-center">
                     {'>'} Real Quantum Hardware Integration
-                  </li>
-                  <li className="flex items-center">
-                    {'>'} Advanced Circuit Builder
                   </li>
                 </ul>
               </div>
