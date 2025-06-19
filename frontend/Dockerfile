@@ -38,7 +38,7 @@ RUN chown -R nextjs:nodejs /var/cache/nginx && \
 USER nextjs
 
 # Expose port
-EXPOSE 3000
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
