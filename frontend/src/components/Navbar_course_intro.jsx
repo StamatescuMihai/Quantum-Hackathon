@@ -4,22 +4,34 @@ import { Menu, X, BookOpen, ChevronRight, Home } from 'lucide-react';
 
 const lessons = [
   {
-    id: '1.0.1',
+    id: '1.1',
     title: 'What is Quantum Computing?',
-    number: '1.0.1',
+    number: '1.1',
     description: 'Introduction to quantum computing fundamentals'
   },
   {
-    id: '1.0.2',
+    id: '1.2',
     title: 'Qubits and Superposition',
-    number: '1.0.2',
+    number: '1.2',
     description: 'Understanding quantum bits and superposition'
   },
   {
-    id: '1.0.3',
-    title: 'Quantum Gates Overview',
-    number: '1.0.3',
-    description: 'Basic quantum gates and operations'
+    id: '1.3',
+    title: 'Quantum Computers-Qubits',
+    number: '1.3',
+    description: 'Basic quantum computers and qubits'
+  },
+  {
+    id: '1.4',
+    title: 'Quantum Computing Use-Cases',
+    number: '1.4',
+    description: 'Examples of how Quantum Computing is used'
+  },
+  {
+    id: '1.5',
+    title: 'Quantum Utility Advantage',
+    number: '1.5',
+    description: 'The advantages of Quantum'
   },
 ];
 
