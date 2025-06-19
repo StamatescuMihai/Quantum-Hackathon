@@ -12,6 +12,9 @@ import Shor from './pages/Shor'
 import Simulator from './pages/Simulator'
 import Exercises from './pages/Exercises'
 import ExercisePage from './pages/ExercisePage'
+import Courses from './pages/Courses'
+import Courses_intro from './pages/Courses_pages/Course_intro/Courses_intro'
+import QuantumIntroLessonPage from './pages/Courses_pages/Course_intro/QuantumLessonPage'
 
 function App() {
   return (
@@ -28,6 +31,10 @@ function App() {
             <Route path="/algorithms/simon" element={<Simon />} />
             <Route path="/algorithms/shor" element={<Shor />} />
             <Route path="/simulator" element={<Simulator />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/intro" element={<Courses_intro />}>
+              <Route path=":lessonId" element={<QuantumIntroLessonPage />} />
+            </Route>
             <Route path="/exercises" element={<Exercises />} />
             <Route path="/exercises/:exerciseId" element={<ExercisePage />} />
           </Routes>
