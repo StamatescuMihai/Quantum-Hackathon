@@ -136,7 +136,26 @@ const Navbar_course_intro = () => {
                 </Link>
               </li>
             );
-          })}
+          })}<li>
+            <Link
+              to="/courses/intro/quiz"
+              className="group block p-4 rounded-xl transition-all duration-200 hover:bg-white/5 border border-transparent hover:border-white/10"
+            >
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-slate-300">
+                  Q
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm mb-1 leading-tight text-slate-200 group-hover:text-white">
+                    Quiz
+                  </h4>
+                  <p className="text-xs leading-relaxed text-slate-400 group-hover:text-slate-300">
+                    Test your knowledge on Quantum Computing
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

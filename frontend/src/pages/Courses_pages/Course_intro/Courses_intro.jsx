@@ -10,7 +10,7 @@ const Courses_intro = () => {
   return (
     <div className="flex min-h-screen bg-neutral-950 text-white">
       {/* Left Sidebar: Navigation */}
-      <div className="w-full md:w-1/4 xl:w-1/5 border-r border-white/10 bg-black/20 backdrop-blur-lg">
+      <div className="w-full md:w-1/4 xl:w-1/5 bg-black/20 backdrop-blur-lg">
         <Navbar_course_intro />
       </div>
 
