@@ -1,0 +1,5 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "source venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
