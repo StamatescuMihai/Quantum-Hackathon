@@ -2,4 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "source venv/bin/activate && cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "just run-backend-prod"
+
+[env]
+NIXPACKS_PYTHON_VERSION = "3.11"
