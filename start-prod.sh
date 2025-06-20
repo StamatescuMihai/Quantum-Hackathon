@@ -2,6 +2,7 @@
 
 cd ./backend || exit 1
 echo "🐍     Activating Python virtual environment..."
+python -m venv venv
 source venv/bin/activate
 
 # Kill anything running on port 8000
