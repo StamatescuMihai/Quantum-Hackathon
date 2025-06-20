@@ -7,7 +7,8 @@ const getApiBaseUrl = () => {
   const isProduction = import.meta.env.PROD;
   
   if (isProduction) {
-    return 'http://localhost:8000';
+    // In production, use the Railway backend URL
+    return 'https://quantum-hackathon-production.up.railway.app';
   }
   
   // In development, check if we're accessing from external host
