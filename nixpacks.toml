@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ["python311", "just"]
+nixPkgs = ["python311", "python311Packages.pip", "just"]
 
 [phases.install]
-cmds = ["pip install -r requirements.txt"]
+cmds = ["python -m pip install -r requirements.txt"]
 
 [start]
 cmd = "just run-backend-prod"

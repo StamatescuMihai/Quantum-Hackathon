@@ -2,7 +2,4 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "just run-backend-prod"
-
-[env]
-NIXPACKS_PYTHON_VERSION = "3.11"
+startCommand = "python start.py"
